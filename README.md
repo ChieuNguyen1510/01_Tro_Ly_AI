@@ -1,1 +1,1 @@
-AI chatbot developed by Cody NVC
+AI chatbot developed by Hoang Cao Tu
