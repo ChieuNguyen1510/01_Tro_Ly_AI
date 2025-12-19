@@ -31,7 +31,7 @@ def img_to_base64(img_path):
 # Chuyển ảnh sang base64
 assistant_icon = img_to_base64("assistant_icon.png")
 user_icon = img_to_base64("user_icon.png")
-# CSS cho background với base64 (cải tiến để cover thêm phần trên, loại bỏ margin/padding top) - overlay transparency nhẹ, không tối
+# CSS cho background với base64 (cải tiến để cover thêm phần trên, loại bỏ margin/padding top) - overlay transparency nhẹ, chỉ mờ background
 try:
     bg_image_base64 = img_to_base64("background.png")
     st.markdown(
@@ -58,8 +58,8 @@ try:
                 left: 0;
                 width: 100%;
                 height: 100%;
-                background-color: rgba(255, 255, 255, 0.35); /* <-- SỬA: Overlay trắng trong suốt nhẹ (0.1-0.3 để mờ trong suốt, không tối) */
-                z-index: 0; /* Ở trên background nhưng dưới nội dung */
+                background-color: rgba(255, 255, 255, 0.1); /* <-- SỬA: Overlay trắng trong suốt rất nhẹ (0.05-0.2, chỉ mờ background, không ảnh hưởng nội dung) */
+                z-index: -1; /* <-- SỬA: Z-index thấp để chỉ mờ background, nội dung ở trên không bị ảnh hưởng */
                 pointer-events: none; /* Không chặn tương tác */
             }}
             body {{
@@ -82,8 +82,8 @@ try:
                 left: 0;
                 width: 100%;
                 height: 100%;
-                background-color: rgba(255, 255, 255, 0.35); /* <-- SỬA: Overlay tương tự, trắng trong suốt */
-                z-index: 0;
+                background-color: rgba(255, 255, 255, 0.1); /* <-- SỬA: Overlay tương tự, trong suốt nhẹ */
+                z-index: -1; /* Z-index thấp */
                 pointer-events: none;
             }}
             
@@ -211,7 +211,7 @@ st.markdown(
         }
         .typing::after {
             content: "..." !important;
-            animation: blur 1s infinite !important;
+            animation: blink 1s infinite !important;
         }
         [data-testid="stChatInput"] {
             border: 2px solid #ddd !important;
