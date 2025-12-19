@@ -36,16 +36,20 @@ st.markdown(
     f"""
     <style>
 
-    /* Hide Streamlit default toolbar */
-    [data-testid="stToolbar"] {{
-        display: none !important;
-    }}
-    [data-testid="manage-app-button"] {{
-        display: none !important;
+    /* ================= ROOT FULL HEIGHT ================= */
+    html, body {{
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        overflow-x: hidden;
     }}
 
-    /* ROOT BACKGROUND */
+    #root {{
+        height: 100%;
+    }}
+
     .stApp {{
+        min-height: 100vh;
         background-image: url("data:image/png;base64,{bg_image_base64}");
         background-size: cover;
         background-position: center;
@@ -53,77 +57,41 @@ st.markdown(
         background-attachment: fixed;
     }}
 
-    /* MAIN CONTENT GLASS */
+    /* Container đầu tiên Streamlit bọc */
+    .stApp > div:first-child {{
+        min-height: 100vh;
+        background: transparent;
+    }}
+
+    /* ================= REMOVE STREAMLIT PADDING ================= */
+    section.main {{
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+    }}
+
     section.main > div {{
+        max-width: 100% !important;
+        padding-top: 20px !important;
+        padding-bottom: 20px !important;
         background-color: rgba(255, 255, 255, 0.88);
         border-radius: 14px;
-        padding: 18px;
         backdrop-filter: blur(6px);
     }}
 
-    /* CHAT BUBBLES */
-    .message {{
-        padding: 12px;
-        border-radius: 14px;
-        max-width: 75%;
-        display: flex;
-        gap: 12px;
-        margin: 8px 0;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-        font-size: 16px;
-        line-height: 1.45;
+    /* ================= HIDE TOOLBAR ================= */
+    [data-testid="stToolbar"] {{
+        display: none !important;
     }}
 
-    .assistant {{
-        background-color: #f0f7ff;
-    }}
-
-    .user {{
-        background-color: #e6ffe6;
-        margin-left: auto;
-        flex-direction: row-reverse;
-        text-align: right;
-    }}
-
-    .icon {{
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        border: 1px solid #ddd;
-    }}
-
-    /* CHAT INPUT */
-    [data-testid="stChatInput"] {{
-        border-radius: 10px;
-        background-color: #fafafa;
-    }}
-
-    /* BUTTON */
-    div.stButton > button {{
-        background-color: #4CAF50;
-        color: white;
-        border-radius: 8px;
-        padding: 6px 12px;
-        font-size: 14px;
-        border: none;
-        margin: 10px 0;
-    }}
-
-    div.stButton > button:hover {{
-        background-color: #45a049;
-    }}
-
-    /* TYPING */
-    .typing {{
-        font-style: italic;
-        color: #777;
-        margin: 8px 0;
+    [data-testid="manage-app-button"] {{
+        display: none !important;
     }}
 
     </style>
     """,
     unsafe_allow_html=True
 )
+
 
 # ---------------------------
 # LOGO
