@@ -31,34 +31,32 @@ def img_to_base64(img_path):
 # Chuyển ảnh sang base64
 assistant_icon = img_to_base64("assistant_icon.png")
 user_icon = img_to_base64("user_icon.png")
-# Chuyển ảnh nền PNG thành base64 (thay "background.png" bằng file của bạn)
-bg_image_base64 = img_to_base64("background.png")
-# CSS cho background
+# CSS cho background đơn giản (sử dụng file PNG trực tiếp, đặt file "background.png" trong thư mục app)
 st.markdown(
-    f"""
+    """
     <style>
-        /* Background toàn bộ trang với ảnh PNG */
-        .stAppViewContainer::before {{
+        /* Background toàn bộ trang với ảnh PNG từ file local */
+        .stAppViewContainer::before {
             content: "";
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-image: url('data:image/png;base64,{bg_image_base64}');
+            background-image: url('background.png');
             background-size: cover;  /* Cover toàn màn hình, giữ tỷ lệ */
             background-position: center;  /* Căn giữa */
             background-repeat: no-repeat;
             z-index: -1;  /* Đặt sau các element khác */
             opacity: 0.8;  /* Giảm độ mờ nếu cần (0.5-1.0) */
-        }}
+        }
         
         /* Tùy chọn: Làm mờ nhẹ cho nội dung chat nếu background sáng */
-        .main .block-container {{
+        .main .block-container {
             background-color: rgba(255, 255, 255, 0.9);  /* Nền trắng mờ cho chat */
             border-radius: 10px;
             padding: 10px;
-        }}
+        }
     </style>
     """,
     unsafe_allow_html=True
