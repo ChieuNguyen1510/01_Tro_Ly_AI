@@ -31,48 +31,54 @@ def img_to_base64(img_path):
 # Chuyển ảnh sang base64
 assistant_icon = img_to_base64("assistant_icon.png")
 user_icon = img_to_base64("user_icon.png")
-# CSS cho background với base64 (để đảm bảo hiển thị, đặc biệt trên Streamlit Cloud) - cải tiến mạnh hơn để cover header và footer hoàn toàn
+# CSS cho background với base64 (overlay full màn hình bằng ::before, không ảnh hưởng chat input/header)
 try:
     bg_image_base64 = img_to_base64("background.png")
     st.markdown(
         f"""
         <style>
-            /* Full screen background - cover toàn bộ, bao gồm header và footer, loại bỏ mọi khoảng trắng */
-            html, body, #root, .stApp, .stAppViewContainer {{
+            /* Full screen background overlay - sử dụng ::before để cover toàn bộ mà không ảnh hưởng element con */
+            html, body {{
                 margin: 0 !important;
                 padding: 0 !important;
                 height: 100vh !important;
                 width: 100vw !important;
+            }}
+            .stAppViewContainer::before {{
+                content: "" !important;
+                position: fixed !important;
+                top: 0 !important;
+                left: 0 !important;
+                width: 100vw !important;
+                height: 100vh !important;
                 background-image: url('data:image/png;base64,{bg_image_base64}') !important;
                 background-size: cover !important;
                 background-position: center !important;
                 background-repeat: no-repeat !important;
                 background-attachment: fixed !important;
-                position: fixed !important;
-                top: 0 !important;
-                left: 0 !important;
+                z-index: -1 !important; /* Đặt sau tất cả element */
             }}
-            
-            /* Cover header (logo, title, decoration) */
-            section[data-testid="stDecoration"], .header-row, [data-testid="stHeader"] {{
-                background: inherit !important;
-                background-image: url('data:image/png;base64,{bg_image_base64}') !important;
-                background-size: cover !important;
-                background-position: center !important;
+            .stAppViewContainer {{
+                position: relative !important;
+                height: 100vh !important;
+                width: 100vw !important;
                 margin: 0 !important;
                 padding: 0 !important;
             }}
             
-            /* Cover chat input (footer) - làm trong suốt hoặc inherit background */
-            [data-testid="stChatInput"], [data-testid="stChatInput"] * {{
-                background: inherit !important;
-                background-image: url('data:image/png;base64,{bg_image_base64}') !important;
-                background-size: cover !important;
-                background-position: center !important;
+            /* Header (logo, title) - inherit background overlay, không set image trực tiếp */
+            section[data-testid="stDecoration"], .header-row, [data-testid="stHeader"] {{
+                background: transparent !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }}
+            
+            /* Chat input (footer) - chỉ background mờ, không image */
+            [data-testid="stChatInput"] {{
+                background: transparent !important;
                 border: none !important;
                 margin: 0 !important;
                 padding: 0 !important;
-                backdrop-filter: none !important;
             }}
             [data-testid="stChatInput"] > div > div {{
                 background: rgba(255, 255, 255, 0.8) !important;
@@ -80,17 +86,13 @@ try:
                 backdrop-filter: blur(5px) !important;
             }}
             
-            /* Nội dung chính - loại bỏ padding/margin để full */
+            /* Nội dung chính */
             .main {{
                 padding: 0 !important;
                 margin: 0 !important;
                 height: 100vh !important;
-                width: 100vw !important;
                 overflow-y: auto !important;
-                background: inherit !important;
-                background-image: url('data:image/png;base64,{bg_image_base64}') !important;
-                background-size: cover !important;
-                background-position: center !important;
+                background: transparent !important;
             }}
             .main .block-container {{
                 background-color: rgba(255, 255, 255, 0.9) !important;
@@ -104,7 +106,7 @@ try:
                 z-index: 1 !important;
             }}
             
-            /* Đảm bảo mọi element con inherit nếu cần */
+            /* Đảm bảo mọi element con không override */
             * {{
                 box-sizing: border-box !important;
             }}
