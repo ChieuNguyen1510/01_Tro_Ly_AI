@@ -31,7 +31,7 @@ def img_to_base64(img_path):
 # Chuyển ảnh sang base64
 assistant_icon = img_to_base64("assistant_icon.png")
 user_icon = img_to_base64("user_icon.png")
-# CSS cho background với base64 (cải tiến để cover thêm phần trên, loại bỏ margin/padding top)
+# CSS cho background với base64 (cải tiến để cover thêm phần trên, loại bỏ margin/padding top) - thêm blur cho nền
 try:
     bg_image_base64 = img_to_base64("background.png")
     st.markdown(
@@ -49,6 +49,7 @@ try:
                 margin: 0;
                 padding: 0;
                 margin-top: -10px !important; /* Kéo lên để cover phần top bị mất */
+                filter: blur(2px); /* <-- THÊM: Làm mờ nền (thử 1-3px, tăng để mờ hơn) */
             }}
             body {{
                 background-image: url('data:image/png;base64,{bg_image_base64}');
@@ -61,6 +62,7 @@ try:
                 margin: 0;
                 padding: 0;
                 margin-top: -10px !important;
+                filter: blur(2px); /* <-- THÊM: Làm mờ nền tương tự */
             }}
             
             /* Làm header transparent để thấy background, loại bỏ padding top */
