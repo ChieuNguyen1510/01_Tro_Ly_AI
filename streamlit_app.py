@@ -31,14 +31,14 @@ def img_to_base64(img_path):
 # Chuyển ảnh sang base64
 assistant_icon = img_to_base64("assistant_icon.png")
 user_icon = img_to_base64("user_icon.png")
-# CSS cho background với base64 (cải tiến để cover thêm phần trên, loại bỏ margin/padding top) - overlay rgba chỉ trên background, không ảnh hưởng nội dung
+# CSS cho background với base64 (cải tiến để cover thêm phần trên, loại bỏ margin/padding top) - overlay transparency nhẹ, không tối
 try:
     bg_image_base64 = img_to_base64("background.png")
     st.markdown(
         f"""
         <style>
             /* Background đơn giản đã hoạt động - thêm transparent cho header và footer, fix crop top */
-            body {{
+            .stAppViewContainer {{
                 background-image: url('data:image/png;base64,{bg_image_base64}');
                 background-size: cover;
                 background-position: center top; /* Căn giữa theo top để tránh crop trên */
@@ -48,29 +48,43 @@ try:
                 width: 100vw;
                 margin: 0;
                 padding: 0;
-                margin-top: -10px !important;
-                position: relative;
+                margin-top: -10px !important; /* Kéo lên để cover phần top bị mất */
+                position: relative; /* Để overlay hoạt động */
             }}
-            body::before {{
-                content: ''; /* Pseudo-element cho overlay chỉ trên background */
-                position: fixed;
+            .stAppViewContainer::after {{
+                content: ''; /* Pseudo-element cho overlay */
+                position: absolute;
                 top: 0;
                 left: 0;
-                width: 100vw;
-                height: 100vh;
-                background-color: rgba(255, 255, 255, 0.1); /* Overlay trắng trong suốt nhẹ (0.05-0.2, chỉ mờ background) */
-                z-index: 0; /* Z-index thấp để chỉ trên background, dưới nội dung */
-                pointer-events: none;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(255, 255, 255, 0.2); /* <-- SỬA: Overlay trắng trong suốt nhẹ (0.1-0.3 để mờ trong suốt, không tối) */
+                z-index: 0; /* Ở trên background nhưng dưới nội dung */
+                pointer-events: none; /* Không chặn tương tác */
             }}
-            .stAppViewContainer {{
-                background: transparent; /* Không set background image ở đây để tránh overlap */
+            body {{
+                background-image: url('data:image/png;base64,{bg_image_base64}');
+                background-size: cover;
+                background-position: center top;
+                background-repeat: no-repeat;
+                background-attachment: fixed;
                 height: 100vh;
                 width: 100vw;
                 margin: 0;
                 padding: 0;
                 margin-top: -10px !important;
                 position: relative;
-                z-index: 1; /* Nội dung chính ở trên overlay */
+            }}
+            body::after {{
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(255, 255, 255, 0.2); /* <-- SỬA: Overlay tương tự, trắng trong suốt */
+                z-index: 0;
+                pointer-events: none;
             }}
             
             /* Làm header transparent để thấy background, loại bỏ padding top */
@@ -79,14 +93,14 @@ try:
                 padding-top: 0 !important;
                 margin-top: 0 !important;
                 position: relative;
-                z-index: 2; /* Cao hơn overlay */
+                z-index: 1; /* Đặt trên overlay */
             }}
             [data-testid="stHeader"] {{
                 background: transparent !important;
                 padding-top: 0 !important;
                 margin-top: 0 !important;
                 position: relative;
-                z-index: 2;
+                z-index: 1;
             }}
             
             /* Làm footer (chat input) transparent background */
@@ -94,36 +108,26 @@ try:
                 background: transparent !important;
                 border: none !important;
                 position: relative;
-                z-index: 2;
+                z-index: 1;
             }}
             [data-testid="stChatInput"] > div > div {{
-                background: rgba(255, 255, 255, 0.95) !important; /* Opacity cao để sắc nét */
+                background: rgba(255, 255, 255, 0.9) !important;
                 border-radius: 10px !important;
+                backdrop-filter: blur(5px) !important;
             }}
             
             /* Nội dung chính */
-            .main {{
-                z-index: 2; /* Cao hơn overlay */
-            }}
             .main .block-container {{
-                background-color: rgba(255, 255, 255, 0.95) !important; /* Opacity cao để sắc nét */
+                background-color: rgba(255, 255, 255, 0.9) !important;
                 border-radius: 10px !important;
                 padding: 10px !important;
+                backdrop-filter: blur(5px) !important;
                 margin: 10px !important;
                 max-height: 80vh !important;
                 overflow-y: auto !important;
                 margin-top: 0 !important; /* Đảm bảo không margin top thêm */
                 position: relative;
-                z-index: 2; /* Cao hơn overlay */
-            }}
-            /* Đảm bảo avatar và message không bị mờ */
-            .icon {{
-                filter: none !important; /* Không filter mờ */
-                z-index: 3 !important;
-            }}
-            .message {{
-                filter: none !important; /* Không filter mờ */
-                z-index: 3 !important;
+                z-index: 1; /* Đặt trên overlay */
             }}
         </style>
         """,
@@ -207,7 +211,7 @@ st.markdown(
         }
         .typing::after {
             content: "..." !important;
-            animation: blink 1s infinite !important;
+            animation: blur 1s infinite !important;
         }
         [data-testid="stChatInput"] {
             border: 2px solid #ddd !important;
