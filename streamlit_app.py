@@ -58,7 +58,7 @@ try:
                 left: 0;
                 width: 100%;
                 height: 100%;
-                background-color: rgba(255, 255, 255, 0.1); /* Overlay trắng trong suốt rất nhẹ (0.05-0.2, chỉ mờ background) */
+                background-color: rgba(255, 255, 255, 0.4); /* Overlay trắng trong suốt rất nhẹ (0.05-0.2, chỉ mờ background) */
                 z-index: -1; /* Z-index thấp để chỉ mờ background, nội dung ở trên không bị ảnh hưởng */
                 pointer-events: none; /* Không chặn tương tác */
             }}
@@ -82,7 +82,7 @@ try:
                 left: 0;
                 width: 100%;
                 height: 100%;
-                background-color: rgba(255, 255, 255, 0.1); /* Overlay tương tự, trong suốt nhẹ */
+                background-color: rgba(255, 255, 255, 0.4); /* Overlay tương tự, trong suốt nhẹ */
                 z-index: -1; /* Z-index thấp */
                 pointer-events: none;
             }}
