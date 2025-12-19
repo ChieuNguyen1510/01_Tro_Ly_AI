@@ -31,31 +31,34 @@ def img_to_base64(img_path):
 # Chuyển ảnh sang base64
 assistant_icon = img_to_base64("assistant_icon.png")
 user_icon = img_to_base64("user_icon.png")
-# CSS cho background đơn giản (sử dụng file PNG trực tiếp, đặt file "background.png" trong thư mục app)
+# CSS cho background đơn giản hơn (thử selector chính xác hơn cho Streamlit, đảm bảo file background.png ở thư mục gốc)
 st.markdown(
     """
     <style>
-        /* Background toàn bộ trang với ảnh PNG từ file local */
-        .stAppViewContainer::before {
-            content: "";
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+        /* Background toàn bộ trang với ảnh PNG từ file local - selector cải tiến cho Streamlit */
+        section[data-testid="stAppViewContainer"] {
             background-image: url('background.png');
-            background-size: cover;  /* Cover toàn màn hình, giữ tỷ lệ */
-            background-position: center;  /* Căn giữa */
+            background-size: cover;
+            background-position: center;
             background-repeat: no-repeat;
-            z-index: -1;  /* Đặt sau các element khác */
-            opacity: 0.8;  /* Giảm độ mờ nếu cần (0.5-1.0) */
+            background-attachment: fixed; /* Giữ ảnh cố định khi scroll */
         }
         
-        /* Tùy chọn: Làm mờ nhẹ cho nội dung chat nếu background sáng */
+        /* Làm mờ nhẹ cho nội dung chat nếu background sáng */
         .main .block-container {
-            background-color: rgba(255, 255, 255, 0.9);  /* Nền trắng mờ cho chat */
+            background-color: rgba(255, 255, 255, 0.9) !important;
             border-radius: 10px;
             padding: 10px;
+            backdrop-filter: blur(5px); /* Thêm blur cho hiệu ứng kính */
+        }
+        
+        /* Đảm bảo toàn bộ body có background */
+        body {
+            background-image: url('background.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
         }
     </style>
     """,
