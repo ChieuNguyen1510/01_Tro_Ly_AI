@@ -31,40 +31,37 @@ def img_to_base64(img_path):
 # Chuyển ảnh sang base64
 assistant_icon = img_to_base64("assistant_icon.png")
 user_icon = img_to_base64("user_icon.png")
-# CSS cho background với base64 (sử dụng ::before trên body để cover full, đảm bảo hiển thị)
+# CSS cho background với base64 (quay lại phiên bản đơn giản đã hiện, thêm transparent cho header/footer)
 try:
     bg_image_base64 = img_to_base64("background.png")
     st.markdown(
         f"""
         <style>
-            /* Full screen background overlay - ::before trên body để cover toàn bộ */
-            html, body {{
-                margin: 0 !important;
-                padding: 0 !important;
-                height: 100vh !important;
-                width: 100vw !important;
-                position: relative !important;
-            }}
-            body::before {{
-                content: "" !important;
-                position: fixed !important;
-                top: 0 !important;
-                left: 0 !important;
-                width: 100vw !important;
-                height: 100vh !important;
-                background-image: url('data:image/png;base64,{bg_image_base64}') !important;
-                background-size: cover !important;
-                background-position: center !important;
-                background-repeat: no-repeat !important;
-                background-attachment: fixed !important;
-                z-index: -9999 !important; /* Z-index rất thấp để ở dưới cùng */
-            }}
+            /* Background đơn giản đã hoạt động - thêm transparent cho header và footer */
             .stAppViewContainer {{
-                position: relative !important;
-                z-index: 0 !important;
+                background-image: url('data:image/png;base64,{bg_image_base64}');
+                background-size: cover;
+                background-position: center;
+                background-repeat: no-repeat;
+                background-attachment: fixed;
+                height: 100vh;
+                width: 100vw;
+                margin: 0;
+                padding: 0;
+            }}
+            body {{
+                background-image: url('data:image/png;base64,{bg_image_base64}');
+                background-size: cover;
+                background-position: center;
+                background-repeat: no-repeat;
+                background-attachment: fixed;
+                height: 100vh;
+                width: 100vw;
+                margin: 0;
+                padding: 0;
             }}
             
-            /* Header - transparent để thấy background */
+            /* Làm header transparent để thấy background */
             section[data-testid="stDecoration"] {{
                 background: transparent !important;
             }}
@@ -72,32 +69,26 @@ try:
                 background: transparent !important;
             }}
             
-            /* Chat input - transparent background để thấy overlay */
+            /* Làm footer (chat input) transparent background */
             [data-testid="stChatInput"] {{
                 background: transparent !important;
                 border: none !important;
             }}
             [data-testid="stChatInput"] > div > div {{
-                background: rgba(255, 255, 255, 0.8) !important;
+                background: rgba(255, 255, 255, 0.9) !important;
                 border-radius: 10px !important;
                 backdrop-filter: blur(5px) !important;
             }}
             
             /* Nội dung chính */
-            .main {{
-                padding: 1rem 0 !important; /* Giữ padding nhỏ cho nội dung */
-                background: transparent !important;
-            }}
             .main .block-container {{
                 background-color: rgba(255, 255, 255, 0.9) !important;
                 border-radius: 10px !important;
                 padding: 10px !important;
                 backdrop-filter: blur(5px) !important;
                 margin: 10px !important;
-                max-height: 85vh !important;
+                max-height: 80vh !important;
                 overflow-y: auto !important;
-                position: relative !important;
-                z-index: 1 !important;
             }}
         </style>
         """,
