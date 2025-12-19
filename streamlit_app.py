@@ -31,34 +31,56 @@ def img_to_base64(img_path):
 # Chuyển ảnh sang base64
 assistant_icon = img_to_base64("assistant_icon.png")
 user_icon = img_to_base64("user_icon.png")
-# CSS cho background với base64 (để đảm bảo hiển thị, đặc biệt trên Streamlit Cloud)
+# CSS cho background với base64 (để đảm bảo hiển thị, đặc biệt trên Streamlit Cloud) - cải tiến để full màn hình
 try:
     bg_image_base64 = img_to_base64("background.png")
     st.markdown(
         f"""
         <style>
-            /* Background toàn bộ trang với ảnh PNG base64 */
+            /* Full screen background - loại bỏ margin/padding và set height full */
+            html, body {{
+                margin: 0 !important;
+                padding: 0 !important;
+                height: 100% !important;
+                overflow: hidden; /* Ngăn scroll thừa nếu cần */
+            }}
             .stAppViewContainer {{
-                background-image: url('data:image/png;base64,{bg_image_base64}');
-                background-size: cover;
-                background-position: center;
-                background-repeat: no-repeat;
-                background-attachment: fixed;
+                background-image: url('data:image/png;base64,{bg_image_base64}') !important;
+                background-size: cover !important;
+                background-position: center !important;
+                background-repeat: no-repeat !important;
+                background-attachment: fixed !important;
+                height: 100vh !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                position: relative !important;
             }}
             body {{
-                background-image: url('data:image/png;base64,{bg_image_base64}');
-                background-size: cover;
-                background-position: center;
-                background-repeat: no-repeat;
-                background-attachment: fixed;
+                background-image: url('data:image/png;base64,{bg_image_base64}') !important;
+                background-size: cover !important;
+                background-position: center !important;
+                background-repeat: no-repeat !important;
+                background-attachment: fixed !important;
+                height: 100vh !important;
+                margin: 0 !important;
+                padding: 0 !important;
             }}
             
-            /* Làm mờ nhẹ cho nội dung chat */
+            /* Loại bỏ padding mặc định của Streamlit để full height */
+            .main {{
+                padding: 0 !important;
+                margin: 0 !important;
+                height: 100vh !important;
+                overflow-y: auto; /* Cho phép scroll nội dung nếu dài */
+            }}
             .main .block-container {{
                 background-color: rgba(255, 255, 255, 0.9) !important;
-                border-radius: 10px;
-                padding: 10px;
-                backdrop-filter: blur(5px);
+                border-radius: 10px !important;
+                padding: 10px !important;
+                backdrop-filter: blur(5px) !important;
+                margin: 10px !important; /* Thêm margin nhỏ cho nội dung không sát cạnh */
+                max-height: 90vh !important;
+                overflow-y: auto !important;
             }}
         </style>
         """,
