@@ -49,7 +49,7 @@ try:
                 margin: 0;
                 padding: 0;
                 margin-top: -10px !important; /* Kéo lên để cover phần top bị mất */
-                filter: blur(2px); /* <-- THÊM: Làm mờ nền (thử 1-3px, tăng để mờ hơn) */
+                filter: blur(5px); /* <-- THÊM: Làm mờ nền (thử 1-3px, tăng để mờ hơn) */
             }}
             body {{
                 background-image: url('data:image/png;base64,{bg_image_base64}');
@@ -62,7 +62,7 @@ try:
                 margin: 0;
                 padding: 0;
                 margin-top: -10px !important;
-                filter: blur(2px); /* <-- THÊM: Làm mờ nền tương tự */
+                filter: blur(5px); /* <-- THÊM: Làm mờ nền tương tự */
             }}
             
             /* Làm header transparent để thấy background, loại bỏ padding top */
