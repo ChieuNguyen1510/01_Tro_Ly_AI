@@ -31,14 +31,14 @@ def img_to_base64(img_path):
 # Chuyển ảnh sang base64
 assistant_icon = img_to_base64("assistant_icon.png")
 user_icon = img_to_base64("user_icon.png")
-# CSS cho background với base64 (cải tiến để cover thêm phần trên, loại bỏ margin/padding top) - overlay transparency nhẹ, chỉ mờ background, không blur nội dung
+# CSS cho background với base64 (cải tiến để cover thêm phần trên, loại bỏ margin/padding top) - overlay rgba chỉ trên background, không ảnh hưởng nội dung
 try:
     bg_image_base64 = img_to_base64("background.png")
     st.markdown(
         f"""
         <style>
             /* Background đơn giản đã hoạt động - thêm transparent cho header và footer, fix crop top */
-            .stAppViewContainer {{
+            body {{
                 background-image: url('data:image/png;base64,{bg_image_base64}');
                 background-size: cover;
                 background-position: center top; /* Căn giữa theo top để tránh crop trên */
@@ -48,43 +48,29 @@ try:
                 width: 100vw;
                 margin: 0;
                 padding: 0;
-                margin-top: -10px !important; /* Kéo lên để cover phần top bị mất */
-                position: relative; /* Để overlay hoạt động */
+                margin-top: -10px !important;
+                position: relative;
             }}
-            .stAppViewContainer::after {{
-                content: ''; /* Pseudo-element cho overlay */
-                position: absolute;
+            body::before {{
+                content: ''; /* Pseudo-element cho overlay chỉ trên background */
+                position: fixed;
                 top: 0;
                 left: 0;
-                width: 100%;
-                height: 100%;
-                background-color: rgba(255, 255, 255, 0.4); /* Overlay trắng trong suốt rất nhẹ (0.05-0.2, chỉ mờ background) */
-                z-index: -1; /* Z-index thấp để chỉ mờ background, nội dung ở trên không bị ảnh hưởng */
-                pointer-events: none; /* Không chặn tương tác */
+                width: 100vw;
+                height: 100vh;
+                background-color: rgba(255, 255, 255, 0.1); /* Overlay trắng trong suốt nhẹ (0.05-0.2, chỉ mờ background) */
+                z-index: -2; /* Z-index rất thấp để chỉ trên background, dưới mọi nội dung */
+                pointer-events: none;
             }}
-            body {{
-                background-image: url('data:image/png;base64,{bg_image_base64}');
-                background-size: cover;
-                background-position: center top;
-                background-repeat: no-repeat;
-                background-attachment: fixed;
+            .stAppViewContainer {{
+                background-image: none; /* Không set background image ở đây để tránh overlap */
                 height: 100vh;
                 width: 100vw;
                 margin: 0;
                 padding: 0;
                 margin-top: -10px !important;
                 position: relative;
-            }}
-            body::after {{
-                content: '';
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background-color: rgba(255, 255, 255, 0.4); /* Overlay tương tự, trong suốt nhẹ */
-                z-index: -1; /* Z-index thấp */
-                pointer-events: none;
+                z-index: 1; /* Nội dung chính ở trên overlay */
             }}
             
             /* Làm header transparent để thấy background, loại bỏ padding top */
@@ -93,14 +79,14 @@ try:
                 padding-top: 0 !important;
                 margin-top: 0 !important;
                 position: relative;
-                z-index: 10; /* Z-index cao để sắc nét */
+                z-index: 5; /* Cao hơn overlay */
             }}
             [data-testid="stHeader"] {{
                 background: transparent !important;
                 padding-top: 0 !important;
                 margin-top: 0 !important;
                 position: relative;
-                z-index: 10;
+                z-index: 5;
             }}
             
             /* Làm footer (chat input) transparent background */
@@ -108,26 +94,36 @@ try:
                 background: transparent !important;
                 border: none !important;
                 position: relative;
-                z-index: 10;
+                z-index: 5;
             }}
             [data-testid="stChatInput"] > div > div {{
-                background: rgba(255, 255, 255, 0.95) !important; /* Tăng opacity để sắc nét hơn */
+                background: rgba(255, 255, 255, 0.95) !important; /* Opacity cao để sắc nét */
                 border-radius: 10px !important;
-                backdrop-filter: none !important; /* <-- SỬA: Bỏ blur để không mờ khung chat */
             }}
             
             /* Nội dung chính */
+            .main {{
+                z-index: 5; /* Cao hơn overlay */
+            }}
             .main .block-container {{
-                background-color: rgba(255, 255, 255, 0.95) !important; /* Tăng opacity để sắc nét */
+                background-color: rgba(255, 255, 255, 0.95) !important; /* Opacity cao để sắc nét */
                 border-radius: 10px !important;
                 padding: 10px !important;
-                backdrop-filter: none !important; /* <-- SỬA: Bỏ blur để không mờ khung chat và avatar */
                 margin: 10px !important;
                 max-height: 80vh !important;
                 overflow-y: auto !important;
                 margin-top: 0 !important; /* Đảm bảo không margin top thêm */
                 position: relative;
-                z-index: 10; /* Z-index cao để sắc nét */
+                z-index: 5; /* Cao hơn overlay */
+            }}
+            /* Đảm bảo avatar và message không bị mờ */
+            .icon {{
+                filter: none !important; /* Không filter mờ */
+                z-index: 10 !important;
+            }}
+            .message {{
+                filter: none !important; /* Không filter mờ */
+                z-index: 10 !important;
             }}
         </style>
         """,
