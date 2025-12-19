@@ -31,39 +31,41 @@ def img_to_base64(img_path):
 # Chuyển ảnh sang base64
 assistant_icon = img_to_base64("assistant_icon.png")
 user_icon = img_to_base64("user_icon.png")
-# CSS cho background đơn giản hơn (thử selector chính xác hơn cho Streamlit, đảm bảo file background.png ở thư mục gốc)
-st.markdown(
-    """
-    <style>
-        /* Background toàn bộ trang với ảnh PNG từ file local - selector cải tiến cho Streamlit */
-        section[data-testid="stAppViewContainer"] {
-            background-image: url('background.png');
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            background-attachment: fixed; /* Giữ ảnh cố định khi scroll */
-        }
-        
-        /* Làm mờ nhẹ cho nội dung chat nếu background sáng */
-        .main .block-container {
-            background-color: rgba(255, 255, 255, 0.9) !important;
-            border-radius: 10px;
-            padding: 10px;
-            backdrop-filter: blur(5px); /* Thêm blur cho hiệu ứng kính */
-        }
-        
-        /* Đảm bảo toàn bộ body có background */
-        body {
-            background-image: url('background.png');
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            background-attachment: fixed;
-        }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
+# CSS cho background với base64 (để đảm bảo hiển thị, đặc biệt trên Streamlit Cloud)
+try:
+    bg_image_base64 = img_to_base64("background.png")
+    st.markdown(
+        f"""
+        <style>
+            /* Background toàn bộ trang với ảnh PNG base64 */
+            .stAppViewContainer {{
+                background-image: url('data:image/png;base64,{bg_image_base64}');
+                background-size: cover;
+                background-position: center;
+                background-repeat: no-repeat;
+                background-attachment: fixed;
+            }}
+            body {{
+                background-image: url('data:image/png;base64,{bg_image_base64}');
+                background-size: cover;
+                background-position: center;
+                background-repeat: no-repeat;
+                background-attachment: fixed;
+            }}
+            
+            /* Làm mờ nhẹ cho nội dung chat */
+            .main .block-container {{
+                background-color: rgba(255, 255, 255, 0.9) !important;
+                border-radius: 10px;
+                padding: 10px;
+                backdrop-filter: blur(5px);
+            }}
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+except FileNotFoundError:
+    st.warning("File background.png không tìm thấy. Vui lòng đặt file vào thư mục app.")
 # Hiển thị logo (nếu có)
 try:
     col1, col2, col3 = st.columns([1, 2, 1])
