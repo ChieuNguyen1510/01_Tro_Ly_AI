@@ -59,11 +59,11 @@ try:
                 width: 100vw;
                 height: 100vh;
                 background-color: rgba(255, 255, 255, 0.1); /* Overlay trắng trong suốt nhẹ (0.05-0.2, chỉ mờ background) */
-                z-index: -2; /* Z-index rất thấp để chỉ trên background, dưới mọi nội dung */
+                z-index: 0; /* Z-index thấp để chỉ trên background, dưới nội dung */
                 pointer-events: none;
             }}
             .stAppViewContainer {{
-                background-image: none; /* Không set background image ở đây để tránh overlap */
+                background: transparent; /* Không set background image ở đây để tránh overlap */
                 height: 100vh;
                 width: 100vw;
                 margin: 0;
@@ -79,14 +79,14 @@ try:
                 padding-top: 0 !important;
                 margin-top: 0 !important;
                 position: relative;
-                z-index: 5; /* Cao hơn overlay */
+                z-index: 2; /* Cao hơn overlay */
             }}
             [data-testid="stHeader"] {{
                 background: transparent !important;
                 padding-top: 0 !important;
                 margin-top: 0 !important;
                 position: relative;
-                z-index: 5;
+                z-index: 2;
             }}
             
             /* Làm footer (chat input) transparent background */
@@ -94,7 +94,7 @@ try:
                 background: transparent !important;
                 border: none !important;
                 position: relative;
-                z-index: 5;
+                z-index: 2;
             }}
             [data-testid="stChatInput"] > div > div {{
                 background: rgba(255, 255, 255, 0.95) !important; /* Opacity cao để sắc nét */
@@ -103,7 +103,7 @@ try:
             
             /* Nội dung chính */
             .main {{
-                z-index: 5; /* Cao hơn overlay */
+                z-index: 2; /* Cao hơn overlay */
             }}
             .main .block-container {{
                 background-color: rgba(255, 255, 255, 0.95) !important; /* Opacity cao để sắc nét */
@@ -114,16 +114,16 @@ try:
                 overflow-y: auto !important;
                 margin-top: 0 !important; /* Đảm bảo không margin top thêm */
                 position: relative;
-                z-index: 5; /* Cao hơn overlay */
+                z-index: 2; /* Cao hơn overlay */
             }}
             /* Đảm bảo avatar và message không bị mờ */
             .icon {{
                 filter: none !important; /* Không filter mờ */
-                z-index: 10 !important;
+                z-index: 3 !important;
             }}
             .message {{
                 filter: none !important; /* Không filter mờ */
-                z-index: 10 !important;
+                z-index: 3 !important;
             }}
         </style>
         """,
