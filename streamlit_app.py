@@ -31,7 +31,7 @@ def img_to_base64(img_path):
 # Chuyển ảnh sang base64
 assistant_icon = img_to_base64("assistant_icon.png")
 user_icon = img_to_base64("user_icon.png")
-# CSS cho background với base64 (cải tiến để cover thêm phần trên, loại bỏ margin/padding top) - overlay transparency nhẹ, chỉ mờ background
+# CSS cho background với base64 (cải tiến để cover thêm phần trên, loại bỏ margin/padding top) - overlay transparency nhẹ, chỉ mờ background, không blur nội dung
 try:
     bg_image_base64 = img_to_base64("background.png")
     st.markdown(
@@ -58,8 +58,8 @@ try:
                 left: 0;
                 width: 100%;
                 height: 100%;
-                background-color: rgba(255, 255, 255, 0.1); /* <-- SỬA: Overlay trắng trong suốt rất nhẹ (0.05-0.2, chỉ mờ background, không ảnh hưởng nội dung) */
-                z-index: -1; /* <-- SỬA: Z-index thấp để chỉ mờ background, nội dung ở trên không bị ảnh hưởng */
+                background-color: rgba(255, 255, 255, 0.1); /* Overlay trắng trong suốt rất nhẹ (0.05-0.2, chỉ mờ background) */
+                z-index: -1; /* Z-index thấp để chỉ mờ background, nội dung ở trên không bị ảnh hưởng */
                 pointer-events: none; /* Không chặn tương tác */
             }}
             body {{
@@ -82,7 +82,7 @@ try:
                 left: 0;
                 width: 100%;
                 height: 100%;
-                background-color: rgba(255, 255, 255, 0.1); /* <-- SỬA: Overlay tương tự, trong suốt nhẹ */
+                background-color: rgba(255, 255, 255, 0.1); /* Overlay tương tự, trong suốt nhẹ */
                 z-index: -1; /* Z-index thấp */
                 pointer-events: none;
             }}
@@ -93,14 +93,14 @@ try:
                 padding-top: 0 !important;
                 margin-top: 0 !important;
                 position: relative;
-                z-index: 1; /* Đặt trên overlay */
+                z-index: 10; /* Z-index cao để sắc nét */
             }}
             [data-testid="stHeader"] {{
                 background: transparent !important;
                 padding-top: 0 !important;
                 margin-top: 0 !important;
                 position: relative;
-                z-index: 1;
+                z-index: 10;
             }}
             
             /* Làm footer (chat input) transparent background */
@@ -108,26 +108,26 @@ try:
                 background: transparent !important;
                 border: none !important;
                 position: relative;
-                z-index: 1;
+                z-index: 10;
             }}
             [data-testid="stChatInput"] > div > div {{
-                background: rgba(255, 255, 255, 0.9) !important;
+                background: rgba(255, 255, 255, 0.95) !important; /* Tăng opacity để sắc nét hơn */
                 border-radius: 10px !important;
-                backdrop-filter: blur(5px) !important;
+                backdrop-filter: none !important; /* <-- SỬA: Bỏ blur để không mờ khung chat */
             }}
             
             /* Nội dung chính */
             .main .block-container {{
-                background-color: rgba(255, 255, 255, 0.9) !important;
+                background-color: rgba(255, 255, 255, 0.95) !important; /* Tăng opacity để sắc nét */
                 border-radius: 10px !important;
                 padding: 10px !important;
-                backdrop-filter: blur(5px) !important;
+                backdrop-filter: none !important; /* <-- SỬA: Bỏ blur để không mờ khung chat và avatar */
                 margin: 10px !important;
                 max-height: 80vh !important;
                 overflow-y: auto !important;
                 margin-top: 0 !important; /* Đảm bảo không margin top thêm */
                 position: relative;
-                z-index: 1; /* Đặt trên overlay */
+                z-index: 10; /* Z-index cao để sắc nét */
             }}
         </style>
         """,
