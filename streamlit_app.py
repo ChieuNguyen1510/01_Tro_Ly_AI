@@ -267,6 +267,11 @@ st.markdown(
         [data-testid="collapsedControl"] {{
             display: none !important;
         }}
+        /* FIX THÊM: Luôn hiện sidebar và ngăn ẩn */
+        section[data-testid="stSidebar"] {{
+            display: block !important;
+            visibility: visible !important;
+        }}
     </style>
     """,
     unsafe_allow_html=True
