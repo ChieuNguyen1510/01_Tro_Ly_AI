@@ -35,12 +35,14 @@ translations = {
         'new_chat': 'Bắt đầu cuộc trò chuyện mới',
         'chat_placeholder': 'Nhập câu hỏi của bạn ở đây...',
         'typing': 'Assistant đang gõ...',
+        'show_sidebar': 'Hiện thanh bên (Ngôn ngữ & Theme)',
     },
     'en': {
         'title': 'Welcome to AI Chatbot',
         'new_chat': 'New chat',
         'chat_placeholder': 'Enter your question here...',
         'typing': 'Assistant is typing...',
+        'show_sidebar': 'Show Sidebar (Language & Theme)',
     }
 }
 # Chuyển ảnh sang base64
@@ -51,7 +53,7 @@ if "language" not in st.session_state:
     st.session_state.language = 'vi' # Default: Tiếng Việt
 if "theme" not in st.session_state:
     st.session_state.theme = 'light' # Default: Light
-# MỚI: Sidebar cho ngôn ngữ và theme
+# MỚI: Sidebar cho ngôn ngữ và theme - ĐẶT TRƯỚC ĐỂ ƯU TIÊN HIỂN THỊ
 with st.sidebar:
     st.header("Cài đặt / Settings")
    
@@ -168,6 +170,20 @@ st.markdown(
     f"""<h1 style="text-align: center; font-size: 24px; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px; color: var(--text-color);">{t['title']}</h1>""",
     unsafe_allow_html=True
 )
+# THÊM: Nút toggle sidebar thủ công trong main area (nếu sidebar bị ẩn)
+if st.button(t['show_sidebar']):
+    st.components.v1.html(
+        """
+        <script>
+            // Toggle sidebar bằng cách click hamburger icon
+            const toggleBtn = document.querySelector('[data-testid="collapsedControl"]');
+            if (toggleBtn) {
+                toggleBtn.click();
+            }
+        </script>
+        """,
+        height=0,
+    )
 # OpenAI API
 openai_api_key = st.secrets.get("OPENAI_API_KEY")
 client = OpenAI(api_key=openai_api_key)
@@ -271,7 +287,18 @@ st.markdown(
         section[data-testid="stSidebar"] {{
             display: block !important;
             visibility: visible !important;
+            width: 250px !important;
         }}
+        /* THÊM: Force sidebar mở rộng */
+        .stSidebar {
+            display: block !important;
+            transform: translateX(0) !important;
+        }
+        /* Nút toggle sidebar */
+        div.stButton > button:first-of-type {
+            background-color: #FF6B6B !important;
+            margin-top: 10px !important;
+        }
     </style>
     """,
     unsafe_allow_html=True
