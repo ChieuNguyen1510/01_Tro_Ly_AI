@@ -215,7 +215,6 @@ if st.button(t['new_chat']):
     st.rerun()
 
 # CSS cải tiến (FIX: Toggle sidebar với CSS động)
-sidebar_class = "" if st.session_state.sidebar_open else " sidebar-hidden"
 st.markdown(
     f"""
     <style>
@@ -333,15 +332,6 @@ st.markdown(
             }}
         }}
     </style>
-    <script>
-        // JS hack để apply class động (nếu cần, nhưng CSS f-string đã đủ)
-        document.addEventListener('DOMContentLoaded', function() {{
-            const sidebar = parent.document.querySelector('section[data-testid="stSidebar"]');
-            if (sidebar) {{
-                sidebar.classList.toggle('sidebar-hidden', !{'true' if st.session_state.sidebar_open else 'false'});
-            }}
-        }});
-    </script>
     """,
     unsafe_allow_html=True
 )
