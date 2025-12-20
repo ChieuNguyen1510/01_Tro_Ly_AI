@@ -492,7 +492,7 @@ if prompt := st.chat_input(t['chat_placeholder']):
     # Assistant đang trả lời...
     typing_placeholder = st.empty()
     typing_placeholder.markdown(
-        '<div class="typing">Assistant is typing..</div>',
+        '<div class="typing"></div>',  # SỬA: Bỏ text hardcode, chỉ dùng CSS ::after để inject {t['typing']}
         unsafe_allow_html=True
     )
     # Gọi API - Sử dụng model_name từ file text
