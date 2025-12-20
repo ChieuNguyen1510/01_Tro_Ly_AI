@@ -45,14 +45,12 @@ translations = {
         'new_chat': 'Bắt đầu cuộc trò chuyện mới',
         'chat_placeholder': 'Nhập câu hỏi của bạn ở đây...',
         'typing': 'Assistant đang gõ...',
-        'toggle_sidebar': 'Ẩn/Hiện Sidebar',
     },
     'en': {
         'title': 'Welcome to AI Chatbot',
         'new_chat': 'New chat',
         'chat_placeholder': 'Enter your question here...',
         'typing': 'Assistant is typing...',
-        'toggle_sidebar': 'Toggle Sidebar',
     }
 }
 
@@ -60,49 +58,39 @@ translations = {
 assistant_icon = img_to_base64("assistant_icon.png")
 user_icon = img_to_base64("user_icon.png")
 
-# MỚI: Khởi tạo session_state cho language, theme, và sidebar_open
+# MỚI: Khởi tạo session_state cho language và theme
 if "language" not in st.session_state:
     st.session_state.language = 'vi'  # Default: Tiếng Việt
 if "theme" not in st.session_state:
     st.session_state.theme = 'light'  # Default: Light
-if "sidebar_open" not in st.session_state:
-    st.session_state.sidebar_open = True  # Default: Mở sidebar
 
-# Lấy text theo ngôn ngữ hiện tại (FIX: Di chuyển lên trước để sử dụng cho button)
+# MỚI: Sidebar cho ngôn ngữ và theme (sử dụng toggle mặc định của Streamlit <<<)
+with st.sidebar:
+    st.header("Cài đặt / Settings")
+   
+    # 1. Chọn ngôn ngữ
+    selected_lang = st.selectbox(
+        "Ngôn ngữ / Language",
+        options=['vi', 'en'],
+        index=0 if st.session_state.language == 'vi' else 1,
+        format_func=lambda x: 'Tiếng Việt' if x == 'vi' else 'English'
+    )
+    if selected_lang != st.session_state.language:
+        st.session_state.language = selected_lang
+        st.rerun()  # Refresh để áp dụng ngôn ngữ mới
+   
+    # 2. Chọn theme
+    selected_theme = st.radio(
+        "Theme",
+        options=['light', 'dark'],
+        index=0 if st.session_state.theme == 'light' else 1
+    )
+    if selected_theme != st.session_state.theme:
+        st.session_state.theme = selected_theme
+        st.rerun()  # Refresh để áp dụng theme mới
+
+# Lấy text theo ngôn ngữ hiện tại
 t = translations[st.session_state.language]
-
-# Nút toggle sidebar ở đầu trang (trong main content)
-col1, col2 = st.columns([1, 10])  # Để nút ở góc phải
-with col1:
-    if st.button(t['toggle_sidebar']):
-        st.session_state.sidebar_open = not st.session_state.sidebar_open
-        st.rerun()
-
-# MỚI: Sidebar cho ngôn ngữ và theme (toggle dựa trên state)
-if st.session_state.sidebar_open:
-    with st.sidebar:
-        st.header("Cài đặt / Settings")
-       
-        # 1. Chọn ngôn ngữ
-        selected_lang = st.selectbox(
-            "Ngôn ngữ / Language",
-            options=['vi', 'en'],
-            index=0 if st.session_state.language == 'vi' else 1,
-            format_func=lambda x: 'Tiếng Việt' if x == 'vi' else 'English'
-        )
-        if selected_lang != st.session_state.language:
-            st.session_state.language = selected_lang
-            st.rerun()  # Refresh để áp dụng ngôn ngữ mới
-       
-        # 2. Chọn theme
-        selected_theme = st.radio(
-            "Theme",
-            options=['light', 'dark'],
-            index=0 if st.session_state.theme == 'light' else 1
-        )
-        if selected_theme != st.session_state.theme:
-            st.session_state.theme = selected_theme
-            st.rerun()  # Refresh để áp dụng theme mới
 
 # CSS cho background với base64
 try:
@@ -214,7 +202,7 @@ if st.button(t['new_chat']):
     st.session_state.messages = [INITIAL_SYSTEM_MESSAGE, INITIAL_ASSISTANT_MESSAGE]
     st.rerun()
 
-# CSS cải tiến (FIX: Toggle sidebar với CSS động)
+# CSS cải tiến (FIX: Giữ nguyên toggle mặc định <<< của Streamlit)
 st.markdown(
     f"""
     <style>
@@ -273,7 +261,7 @@ st.markdown(
             background-color: var(--input-bg) !important;
             color: var(--text-color);
         }}
-        /* Tùy chỉnh nút "New chat" và toggle */
+        /* Tùy chỉnh nút "New chat" */
         div.stButton > button {{
             background-color: #4CAF50 !important;
             color: white !important;
@@ -287,48 +275,14 @@ st.markdown(
         div.stButton > button:hover {{
             background-color: #45a049 !important;
         }}
-        /* MỚI: Toggle Sidebar - Ẩn/Hiện với CSS class động */
-        section[data-testid="stSidebar"] {{
-            transition: transform 0.3s ease-in-out !important;
-            background-color: var(--bg-color) !important;
-            color: var(--text-color) !important;
-        }}
-        section[data-testid="stSidebar"].sidebar-hidden {{
-            transform: translateX(-100%) !important;
-            width: 0 !important;
-            min-width: 0 !important;
-            max-width: 0 !important;
-            overflow: hidden !important;
-            opacity: 0 !important;
-            visibility: hidden !important;
-        }}
-        /* Khi sidebar ẩn, mở rộng main content */
-        .main {{
-            margin-left: {'0px' if not st.session_state.sidebar_open else '300px'} !important;
-            transition: margin-left 0.3s ease-in-out !important;
-            width: {'100%' if not st.session_state.sidebar_open else 'calc(100% - 300px)'} !important;
-        }}
-        /* Ẩn toggle mặc định của Streamlit */
+        /* Giữ nguyên toggle mặc định <<< của Streamlit - KHÔNG ẨN */
         [data-testid="collapsedControl"] {{
-            display: none !important;
+            display: block !important;  /* Đảm bảo nút <<< hiện và hoạt động */
         }}
-        /* Media query cho mobile: Tương tự toggle */
+        /* Media query cho mobile: Toggle mặc định vẫn hoạt động */
         @media (max-width: 768px) {{
-            section[data-testid="stSidebar"] {{
-                width: 100% !important;
-                position: fixed !important;
-                top: 0 !important;
-                left: 0 !important;
-                height: 100vh !important;
-                z-index: 999 !important;
-                transform: translateX(0) !important;
-            }}
-            section[data-testid="stSidebar"].sidebar-hidden {{
-                transform: translateX(-100%) !important;
-            }}
-            .main {{
-                margin-left: 0 !important;
-                width: 100% !important;
+            [data-testid="collapsedControl"] {{
+                display: block !important;
             }}
         }}
     </style>
