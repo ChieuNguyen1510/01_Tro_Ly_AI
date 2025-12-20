@@ -28,9 +28,13 @@ st.markdown(
 )
 # Hàm đọc nội dung từ file văn bản (giữ nguyên cho các file khác nếu cần)
 def rfile(name_file):
-    with open(name_file, "r", encoding="utf-8") as file:
-        return file.read()
-# MỚI: Hàm đọc và trích xuất text từ PDF
+    try:
+        with open(name_file, "r", encoding="utf-8") as file:
+            return file.read()
+    except FileNotFoundError:
+        st.warning(f"File {name_file} không tìm thấy. Sử dụng mặc định.")
+        return ""
+# MỚI: Hàm đọc và trích xuất text từ PDF (chỉ dùng cho system data)
 def read_pdf(pdf_path):
     try:
         with open(pdf_path, 'rb') as file:
@@ -193,16 +197,12 @@ st.markdown(
 # OpenAI API
 openai_api_key = st.secrets.get("OPENAI_API_KEY")
 client = OpenAI(api_key=openai_api_key)
-# MỚI: Đọc từ PDF thay vì các file text riêng lẻ
-# Giả định "data.pdf" chứa toàn bộ nội dung cần thiết (system, assistant, model)
-# Bạn có thể parse thêm nếu PDF có cấu trúc (ví dụ: tách theo trang hoặc keyword)
-pdf_content = read_pdf("data.pdf")
-# Tạm thời gán toàn bộ PDF content cho system message (bạn có thể điều chỉnh để tách phần)
-# Ví dụ: system = pdf_content[:len(pdf_content)//3]  # Nếu cần tách thủ công
-INITIAL_SYSTEM_MESSAGE = {"role": "system", "content": pdf_content}  # Hoặc phần system từ PDF
-INITIAL_ASSISTANT_MESSAGE = {"role": "assistant", "content": pdf_content}  # Hoặc phần assistant từ PDF
-# Model: Giả định model name ở cuối PDF hoặc hardcode nếu cần
-model_name = "gpt-4o-mini"  # Mặc định, hoặc parse từ PDF nếu có (ví dụ: model_name = pdf_content.split()[-1])
+# MỚI: System từ PDF (data), Assistant từ file text cũ, Model từ file text
+pdf_data = read_pdf("data.pdf")  # Chỉ dùng cho system prompt (data)
+assistant_content = rfile("02.assistant.txt")  # Lời chào giữ nguyên
+model_name = rfile("module_chatgpt.txt").strip() or "gpt-4o-mini"  # Model từ file hoặc fallback
+INITIAL_SYSTEM_MESSAGE = {"role": "system", "content": pdf_data}  # System dùng PDF data
+INITIAL_ASSISTANT_MESSAGE = {"role": "assistant", "content": assistant_content or "Xin chào! Tôi là trợ lý AI của bạn. Hãy hỏi tôi bất cứ điều gì."}  # Fallback nếu file không có
 # Khởi tạo session_state.messages nếu chưa có
 if "messages" not in st.session_state:
     st.session_state.messages = [INITIAL_SYSTEM_MESSAGE, INITIAL_ASSISTANT_MESSAGE]
@@ -353,7 +353,7 @@ if prompt := st.chat_input(t['chat_placeholder']):
         '<div class="typing">Assistant is typing..</div>',
         unsafe_allow_html=True
     )
-    # Gọi API - Sử dụng model_name từ PDF hoặc mặc định
+    # Gọi API - Sử dụng model_name từ file text
     response = ""
     stream = client.chat.completions.create(
         model=model_name,
