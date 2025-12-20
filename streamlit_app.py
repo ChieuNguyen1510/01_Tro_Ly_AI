@@ -59,7 +59,7 @@ translations = {
         'title': 'Chào mừng đến với Chatbot AI',
         'new_chat': 'Trò chuyện mới',
         'chat_placeholder': 'Nhập câu hỏi của bạn ở đây...',
-        'typing': 'Trợ lý đang soạn...',
+        'typing': 'Assistant đang soạn...',
         'assistant_fallback': 'Xin chào! Tôi là trợ lý AI của bạn. Hãy hỏi tôi bất cứ điều gì.',
     },
     'en': {
@@ -434,6 +434,32 @@ st.markdown(
             color: var(--text-color) !important;
             /* Không force transform nữa, để Streamlit xử lý collapse */
         }}
+        /* SỬA: Cải thiện sidebar dark theme - Đảm bảo chữ trắng và elements con inherit đúng */
+        section[data-testid="stSidebar"] {{
+            color: var(--text-color) !important;
+        }}
+        section[data-testid="stSidebar"] h1, section[data-testid="stSidebar"] h2, section[data-testid="stSidebar"] h3, 
+        section[data-testid="stSidebar"] h4, section[data-testid="stSidebar"] h5, section[data-testid="stSidebar"] h6 {{
+            color: var(--text-color) !important;
+        }}
+        section[data-testid="stSidebar"] label {{
+            color: var(--text-color) !important;
+        }}
+        section[data-testid="stSidebar"] select, section[data-testid="stSidebar"] input[type="radio"] {{
+            color: var(--text-color) !important;
+            background-color: var(--bg-color) !important;
+            border-color: var(--border-color) !important;
+        }}
+        section[data-testid="stSidebar"] select option {{
+            color: var(--text-color) !important;
+            background-color: var(--bg-color) !important;
+        }}
+        section[data-testid="stSidebar"] .stRadio > div > label {{
+            color: var(--text-color) !important;
+        }}
+        section[data-testid="stSidebar"] .stSelectbox > div > label {{
+            color: var(--text-color) !important;
+        }}
         /* Hiển thị nút toggle sidebar (<<<) để có thể thu gọn/mở rộng */
         [data-testid="collapsedControl"] {{
             display: block !important; /* Hiển thị nút collapse */
@@ -450,6 +476,7 @@ st.markdown(
                 z-index: 999 !important;
                 /* Không force translateX(0), để có thể slide khi toggle */
                 box-shadow: 2px 0 5px rgba(0,0,0,0.1) !important;
+                color: var(--text-color) !important; /* Áp dụng theme cho mobile sidebar */
             }}
             .main {{
                 margin-left: 0 !important;
