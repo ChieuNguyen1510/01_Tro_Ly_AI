@@ -460,6 +460,20 @@ st.markdown(
         section[data-testid="stSidebar"] .stSelectbox > div > label {{
             color: var(--text-color) !important;
         }}
+        /* SỬA MỚI: Target sâu hơn cho radio options text (light/dark) - Đảm bảo chữ trắng ở dark theme */
+        section[data-testid="stSidebar"] .stRadio > label > div > div > span {{
+            color: var(--text-color) !important;
+        }}
+        section[data-testid="stSidebar"] [data-baseweb="radio"] {{
+            color: var(--text-color) !important;
+        }}
+        section[data-testid="stSidebar"] [data-baseweb="radio"] span {{
+            color: var(--text-color) !important;
+        }}
+        /* Áp dụng cho tất cả text elements trong radio */
+        section[data-testid="stSidebar"] div[data-testid="stRadio"] label span {{
+            color: var(--text-color) !important;
+        }}
         /* Hiển thị nút toggle sidebar (<<<) để có thể thu gọn/mở rộng */
         [data-testid="collapsedControl"] {{
             display: block !important; /* Hiển thị nút collapse */
