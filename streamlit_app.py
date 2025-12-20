@@ -172,7 +172,7 @@ try:
             }}
             [data-testid="stChatInput"] > div > div {{
                 background: transparent !important;
-                border: 1px solid rgba(255, 255, 255, 0.2) !important;
+                border: none !important; /* SỬA: Bỏ border trắng hoàn toàn */
                 border-radius: 10px !important;
                 backdrop-filter: blur(5px) !important;
                 color: var(--text-color);
@@ -191,6 +191,7 @@ try:
             [data-testid="stChatInput"] * {{
                 background: transparent !important;
                 box-shadow: none !important;
+                border: none !important; /* SỬA: Bỏ border cho tất cả sub-elements */
             }}
         
             /* Nội dung chính */
