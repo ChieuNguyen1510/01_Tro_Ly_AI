@@ -82,9 +82,11 @@ with st.sidebar:
         st.rerun() # Refresh để áp dụng theme mới
 # Lấy text theo ngôn ngữ hiện tại
 t = translations[st.session_state.language]
+# MỚI: Chọn ảnh background dựa trên theme
+bg_file = "background_light.png" if st.session_state.theme == 'light' else "background_dark.png"
 # CSS cho background với base64 (cải tiến để cover thêm phần trên, loại bỏ margin/padding top)
 try:
-    bg_image_base64 = img_to_base64("background.png")
+    bg_image_base64 = img_to_base64(bg_file)
     st.markdown(
         f"""
         <style>
@@ -159,7 +161,7 @@ try:
         unsafe_allow_html=True
     )
 except FileNotFoundError:
-    st.warning("File background.png không tìm thấy. Vui lòng đặt file vào thư mục app.")
+    st.warning(f"File {bg_file} không tìm thấy. Vui lòng đặt file vào thư mục app.")
 # Hiển thị logo (nếu có)
 try:
     col1, col2, col3 = st.columns([1, 2, 1])
