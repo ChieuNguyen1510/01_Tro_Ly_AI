@@ -1,13 +1,11 @@
 import streamlit as st
 from openai import OpenAI
 from base64 import b64encode
-
 # MỚI: Set page config để wide layout, giúp sidebar có chỗ hơn và luôn mở
 st.set_page_config(
     layout="wide",
-    initial_sidebar_state="expanded"  # Default: Luôn mở sidebar khi load
+    initial_sidebar_state="expanded" # Default: Luôn mở sidebar khi load
 )
-
 # Ẩn thanh công cụ và nút "Manage app"
 st.markdown(
     """
@@ -27,17 +25,14 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
-
 # Hàm đọc nội dung từ file văn bản
 def rfile(name_file):
     with open(name_file, "r", encoding="utf-8") as file:
         return file.read()
-
 # Hàm chuyển ảnh thành base64
 def img_to_base64(img_path):
     with open(img_path, "rb") as f:
         return b64encode(f.read()).decode()
-
 # MỚI: Dictionary dịch ngôn ngữ (dễ mở rộng)
 translations = {
     'vi': {
@@ -53,21 +48,18 @@ translations = {
         'typing': 'Assistant is typing...',
     }
 }
-
 # Chuyển ảnh sang base64
 assistant_icon = img_to_base64("assistant_icon.png")
 user_icon = img_to_base64("user_icon.png")
-
 # MỚI: Khởi tạo session_state cho language và theme
 if "language" not in st.session_state:
-    st.session_state.language = 'vi'  # Default: Tiếng Việt
+    st.session_state.language = 'vi' # Default: Tiếng Việt
 if "theme" not in st.session_state:
-    st.session_state.theme = 'light'  # Default: Light
-
+    st.session_state.theme = 'light' # Default: Light
 # MỚI: Sidebar cho ngôn ngữ và theme (sẽ luôn mở nhờ page_config)
 with st.sidebar:
     st.header("Cài đặt / Settings")
-   
+  
     # 1. Chọn ngôn ngữ
     selected_lang = st.selectbox(
         "Ngôn ngữ / Language",
@@ -77,8 +69,8 @@ with st.sidebar:
     )
     if selected_lang != st.session_state.language:
         st.session_state.language = selected_lang
-        st.rerun()  # Refresh để áp dụng ngôn ngữ mới
-   
+        st.rerun() # Refresh để áp dụng ngôn ngữ mới
+  
     # 2. Chọn theme
     selected_theme = st.radio(
         "Theme",
@@ -87,11 +79,9 @@ with st.sidebar:
     )
     if selected_theme != st.session_state.theme:
         st.session_state.theme = selected_theme
-        st.rerun()  # Refresh để áp dụng theme mới
-
+        st.rerun() # Refresh để áp dụng theme mới
 # Lấy text theo ngôn ngữ hiện tại
 t = translations[st.session_state.language]
-
 # CSS cho background với base64 (cải tiến để cover thêm phần trên, loại bỏ margin/padding top)
 try:
     bg_image_base64 = img_to_base64("background.png")
@@ -107,7 +97,7 @@ try:
                 --user-bg: {'#e6ffe6' if st.session_state.theme == 'light' else '#1e4a2e'};
                 --input-bg: {'#fafafa' if st.session_state.theme == 'light' else '#1f2937'};
             }}
-           
+          
             /* Background đơn giản đã hoạt động - thêm transparent cho header và footer, fix crop top */
             .stAppViewContainer {{
                 background-image: url('data:image/png;base64,{bg_image_base64}');
@@ -126,7 +116,7 @@ try:
                 background-color: var(--bg-color);
                 color: var(--text-color);
             }}
-          
+         
             /* Làm header transparent để thấy background, loại bỏ padding top */
             section[data-testid="stDecoration"] {{
                 background: transparent !important;
@@ -138,7 +128,7 @@ try:
                 padding-top: 0 !important;
                 margin-top: 0 !important;
             }}
-          
+         
             /* Làm footer (chat input) transparent background */
             [data-testid="stChatInput"] {{
                 background: transparent !important;
@@ -151,7 +141,7 @@ try:
                 backdrop-filter: blur(5px) !important;
                 color: var(--text-color);
             }}
-          
+         
             /* Nội dung chính */
             .main .block-container {{
                 background-color: var(--card-bg) !important;
@@ -170,7 +160,6 @@ try:
     )
 except FileNotFoundError:
     st.warning("File background.png không tìm thấy. Vui lòng đặt file vào thư mục app.")
-
 # Hiển thị logo (nếu có)
 try:
     col1, col2, col3 = st.columns([1, 2, 1])
@@ -178,31 +167,25 @@ try:
         st.image("logo.png", use_container_width=True)
 except:
     pass
-
 # Hiển thị tiêu đề
 st.markdown(
     f"""<h1 style="text-align: center; font-size: 24px; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px; color: var(--text-color);">{t['title']}</h1>""",
     unsafe_allow_html=True
 )
-
 # OpenAI API
 openai_api_key = st.secrets.get("OPENAI_API_KEY")
 client = OpenAI(api_key=openai_api_key)
-
 # Tin nhắn hệ thống
 INITIAL_SYSTEM_MESSAGE = {"role": "system", "content": rfile("01.system_trainning.txt")}
 INITIAL_ASSISTANT_MESSAGE = {"role": "assistant", "content": rfile("02.assistant.txt")}
-
 # Khởi tạo session_state.messages nếu chưa có
 if "messages" not in st.session_state:
     st.session_state.messages = [INITIAL_SYSTEM_MESSAGE, INITIAL_ASSISTANT_MESSAGE]
-
 # Nút "Bắt đầu cuộc trò chuyện mới"
 if st.button(t['new_chat']):
     st.session_state.messages = [INITIAL_SYSTEM_MESSAGE, INITIAL_ASSISTANT_MESSAGE]
     st.rerun()
-
-# CSS cải tiến (FIX: Sidebar luôn mở)
+# CSS cải tiến (FIX: Cho phép toggle sidebar với <<<)
 st.markdown(
     f"""
     <style>
@@ -275,26 +258,20 @@ st.markdown(
         div.stButton > button:hover {{
             background-color: #45a049 !important;
         }}
-        /* FIX: Sidebar luôn mở - Force expanded state */
+        /* FIX: Cho phép toggle sidebar - Không force mở nữa, hiển thị nút <<< */
         section[data-testid="stSidebar"] {{
             width: 300px !important;
             min-width: 300px !important;
             max-width: 300px !important;
-            display: block !important;
-            visibility: visible !important;
-            opacity: 1 !important;
-            transform: translateX(0) !important;
-            position: relative !important;
-            z-index: 10 !important;
-            overflow: visible !important;
             background-color: var(--bg-color) !important;
             color: var(--text-color) !important;
+            /* Không force transform nữa, để Streamlit xử lý collapse */
         }}
-        /* Button toggle sidebar (ẩn nếu không cần) - Streamlit default toggle */
+        /* Hiển thị nút toggle sidebar (<<<) để có thể thu gọn/mở rộng */
         [data-testid="collapsedControl"] {{
-            display: none !important;  /* Ẩn nút collapse để force luôn mở */
+            display: block !important; /* Hiển thị nút collapse */
         }}
-        /* Media query cho mobile: Force sidebar full-width và luôn hiện */
+        /* Media query cho mobile: Sidebar có thể slide, nhưng mở mặc định */
         @media (max-width: 768px) {{
             section[data-testid="stSidebar"] {{
                 width: 100% !important;
@@ -304,23 +281,22 @@ st.markdown(
                 left: 0 !important;
                 height: 100vh !important;
                 z-index: 999 !important;
-                transform: translateX(0) !important;  /* Không slide nữa */
+                /* Không force translateX(0), để có thể slide khi toggle */
                 box-shadow: 2px 0 5px rgba(0,0,0,0.1) !important;
             }}
             .main {{
                 margin-left: 0 !important;
                 padding-left: 0 !important;
             }}
-            /* Ẩn toggle trên mobile */
+            /* Hiển thị toggle trên mobile */
             [data-testid="collapsedControl"] {{
-                display: none !important;
+                display: block !important;
             }}
         }}
     </style>
     """,
     unsafe_allow_html=True
 )
-
 # Hiển thị lịch sử tin nhắn (trừ system)
 for message in st.session_state.messages:
     if message["role"] == "assistant":
@@ -337,7 +313,6 @@ for message in st.session_state.messages:
             <div class="text">{message["content"]}</div>
         </div>
         ''', unsafe_allow_html=True)
-
 # Ô nhập câu hỏi
 if prompt := st.chat_input(t['chat_placeholder']):
     st.session_state.messages.append({"role": "user", "content": prompt})
@@ -372,5 +347,5 @@ if prompt := st.chat_input(t['chat_placeholder']):
         <div class="text">{response}</div>
     </div>
     ''', unsafe_allow_html=True)
-   
+  
     st.session_state.messages.append({"role": "assistant", "content": response})
