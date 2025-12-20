@@ -1,14 +1,12 @@
 import streamlit as st
 from openai import OpenAI
 from base64 import b64encode
-import PyPDF2  # Thêm import để đọc PDF
-
-# Set page config để wide layout, giúp sidebar có chỗ hơn và auto toggle
+import PyPDF2 # Thêm import để đọc PDF
+# MỚI: Set page config để wide layout, giúp sidebar có chỗ hơn và luôn mở
 st.set_page_config(
     layout="wide",
-    initial_sidebar_state="auto"  # Auto: Mở trên desktop, đóng mobile
+    initial_sidebar_state="expanded" # Default: Luôn mở sidebar khi load
 )
-
 # Ẩn thanh công cụ và nút "Manage app"
 st.markdown(
     """
@@ -28,7 +26,6 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
-
 # Hàm đọc nội dung từ file văn bản (giữ nguyên cho các file khác nếu cần)
 def rfile(name_file):
     try:
@@ -37,15 +34,14 @@ def rfile(name_file):
     except FileNotFoundError:
         st.warning(f"File {name_file} không tìm thấy. Sử dụng mặc định.")
         return ""
-
-# Hàm đọc và trích xuất text từ PDF (chỉ dùng cho system data)
+# MỚI: Hàm đọc và trích xuất text từ PDF (chỉ dùng cho system data)
 def read_pdf(pdf_path):
     try:
         with open(pdf_path, 'rb') as file:
             reader = PyPDF2.PdfReader(file)
             text = ""
             for page in reader.pages:
-                text += page.extract_text() + "\n"  # Thêm newline giữa các trang
+                text += page.extract_text() + "\n" # Thêm newline giữa các trang
             return text.strip()
     except FileNotFoundError:
         st.error(f"File {pdf_path} không tìm thấy. Vui lòng đặt file vào thư mục app.")
@@ -53,13 +49,11 @@ def read_pdf(pdf_path):
     except Exception as e:
         st.error(f"Lỗi khi đọc PDF: {str(e)}")
         return ""
-
 # Hàm chuyển ảnh thành base64
 def img_to_base64(img_path):
     with open(img_path, "rb") as f:
         return b64encode(f.read()).decode()
-
-# Dictionary dịch ngôn ngữ (dễ mở rộng) - Thêm fallback cho assistant
+# MỚI: Dictionary dịch ngôn ngữ (dễ mở rộng) - Thêm fallback cho assistant
 translations = {
     'vi': {
         'title': 'Chào mừng đến với Chatbot AI',
@@ -76,18 +70,15 @@ translations = {
         'assistant_fallback': 'Hello! I am your AI assistant. Ask me anything.',
     }
 }
-
 # Chuyển ảnh sang base64
 assistant_icon = img_to_base64("assistant_icon.png")
 user_icon = img_to_base64("user_icon.png")
-
-# Khởi tạo session_state cho language và theme
+# MỚI: Khởi tạo session_state cho language và theme
 if "language" not in st.session_state:
-    st.session_state.language = 'vi'  # Default: Tiếng Việt
+    st.session_state.language = 'vi' # Default: Tiếng Việt
 if "theme" not in st.session_state:
-    st.session_state.theme = 'light'  # Default: Light
-
-# Sidebar cho ngôn ngữ và theme
+    st.session_state.theme = 'light' # Default: Light
+# MỚI: Sidebar cho ngôn ngữ và theme (sẽ luôn mở nhờ page_config)
 with st.sidebar:
     st.header("Cài đặt / Settings")
     # 1. Chọn ngôn ngữ
@@ -99,7 +90,7 @@ with st.sidebar:
     )
     if selected_lang != st.session_state.language:
         st.session_state.language = selected_lang
-        st.rerun()  # Refresh để áp dụng ngôn ngữ mới
+        st.rerun() # Refresh để áp dụng ngôn ngữ mới
     # 2. Chọn theme
     selected_theme = st.radio(
         "Theme",
@@ -108,25 +99,21 @@ with st.sidebar:
     )
     if selected_theme != st.session_state.theme:
         st.session_state.theme = selected_theme
-        st.rerun()  # Refresh để áp dụng theme mới
-
+        st.rerun() # Refresh để áp dụng theme mới
 # Lấy text theo ngôn ngữ hiện tại
 t = translations[st.session_state.language]
-
-# Chọn file assistant dựa trên ngôn ngữ
+# MỚI: Chọn file assistant dựa trên ngôn ngữ
 assistant_file = "02.assistant_VN.txt" if st.session_state.language == 'vi' else "02.assistant_EN.txt"
-assistant_content = rfile(assistant_file)  # Đọc file động theo ngôn ngữ
-
-# Chọn ảnh background dựa trên theme
+assistant_content = rfile(assistant_file) # Đọc file động theo ngôn ngữ
+# MỚI: Chọn ảnh background dựa trên theme
 bg_file = "background_light.png" if st.session_state.theme == 'light' else "background_dark.png"
-
 # CSS cho background với base64 (cải tiến để cover thêm phần trên, loại bỏ margin/padding top)
 try:
     bg_image_base64 = img_to_base64(bg_file)
     st.markdown(
         f"""
         <style>
-            /* CSS theme động dựa trên session_state */
+            /* MỚI: CSS theme động dựa trên session_state */
             :root {{
                 --bg-color: {'#ffffff' if st.session_state.theme == 'light' else '#0e1117'};
                 --text-color: {'#000000' if st.session_state.theme == 'light' else '#ffffff'};
@@ -138,29 +125,27 @@ try:
                 --placeholder-color: {'rgba(0, 0, 0, 0.5)' if st.session_state.theme == 'light' else 'rgba(255, 255, 255, 0.7)'};
                 --input-inner-bg: {'rgba(255, 255, 255, 0.2)' if st.session_state.theme == 'light' else 'rgba(255, 255, 255, 0.1)'};
             }}
-       
-            /* FIX: Background luôn cover full, không lệch khi sidebar toggle */
+        
+            /* Background đơn giản đã hoạt động - thêm transparent cho header và footer, fix crop top */
             .stAppViewContainer {{
                 background-image: url('data:image/png;base64,{bg_image_base64}');
                 background-size: cover;
-                background-position: center;
+                background-position: center top;
                 background-repeat: no-repeat;
                 background-attachment: fixed;
                 height: 100vh;
                 width: 100vw;
-                margin: 0 !important;
-                padding: 0 !important;
+                margin: 0;
+                padding: 0;
+                margin-top: -10px !important;
                 color: var(--text-color);
-                position: relative; /* Để absolute positioning cho overlay nếu cần */
             }}
             body {{
                 background-color: var(--bg-color);
                 color: var(--text-color);
-                margin: 0 !important;
-                padding: 0 !important;
             }}
-      
-            /* FIX: Header transparent */
+       
+            /* Làm header transparent để thấy background, loại bỏ padding top */
             section[data-testid="stDecoration"] {{
                 background: transparent !important;
                 padding-top: 0 !important;
@@ -171,63 +156,7 @@ try:
                 padding-top: 0 !important;
                 margin-top: 0 !important;
             }}
-      
-            /* FIX layout main - Luôn full width, center content, không lệch sidebar */
-            .main {{
-                margin: 0 !important;
-                padding: 0 !important;
-                width: 100% !important;
-                max-width: none !important;
-                display: flex !important;
-                justify-content: center !important; /* Center nội dung chính */
-                align-items: flex-start !important;
-                min-height: 100vh !important;
-                box-sizing: border-box !important;
-            }}
-            /* Khi sidebar collapsed: Force remove margin-left (Streamlit thường add ~300px) */
-            [data-testid="stSidebar"][aria-expanded="false"] ~ .main,
-            body:has([data-testid="stSidebar"][aria-expanded="false"]) .main {{
-                margin-left: 0 !important;
-                padding-left: 0 !important;
-                transform: none !important; /* Bỏ shift transform nếu có */
-            }}
-            /* Nếu không detect aria, fallback cho class collapsed (Streamlit internal) */
-            .css-1d391kg .main {{  /* Class khi collapsed trên một số version */
-                margin-left: 0 !important;
-                padding-left: 0 !important;
-            }}
-      
-            /* FIX: Block container (nội dung chat) - Center và adjust width động */
-            .main .block-container {{
-                background-color: var(--card-bg) !important;
-                border-radius: 10px !important;
-                padding: 20px !important;  /* Tăng padding để bù khi center */
-                backdrop-filter: blur(5px) !important;
-                margin: 10px auto !important;  /* Auto margin để center */
-                max-width: 90% !important;  /* Giới hạn width để không sát mép khi sidebar đóng */
-                width: auto !important;
-                max-height: 80vh !important;
-                overflow-y: auto !important;
-                color: var(--text-color);
-                box-sizing: border-box !important;
-            }}
-      
-            /* Sidebar: Giữ fixed width khi mở, nhưng không ảnh hưởng main */
-            section[data-testid="stSidebar"] {{
-                width: 300px !important;
-                min-width: 300px !important;
-                max-width: 300px !important;
-                background-color: var(--bg-color) !important;
-                color: var(--text-color) !important;
-                z-index: 1000 !important;  /* Đảm bảo sidebar overlay khi mobile */
-                position: relative !important;  /* Tránh absolute conflict */
-            }}
-            /* Khi expanded: Manual set margin cho main để consistent */
-            [data-testid="stSidebar"][aria-expanded="true"] ~ .main {{
-                margin-left: 300px !important;  /* Manual set để consistent */
-                padding-left: 0 !important;
-            }}
-      
+       
             /* SỬA: Làm footer (chat input) transparent hoàn toàn, loại bỏ nền trắng - Target các selector sâu hơn */
             [data-testid="stBottom"] > div {{
                 background: transparent !important;
@@ -383,25 +312,18 @@ try:
                     margin: 0 !important;
                 }}
             }}
-      
-            /* Media query mobile: Luôn full khi sidebar collapse (cải thiện) */
-            @media (max-width: 768px) {{
-                .main {{
-                    margin-left: 0 !important;
-                    padding-left: 0 !important;
-                }}
-                .main .block-container {{
-                    max-width: 100% !important;
-                    margin: 5px !important;  /* Giảm margin mobile */
-                }}
-                section[data-testid="stSidebar"] {{
-                    width: 100% !important;
-                    position: fixed !important;
-                    transform: translateX(-100%) !important;  /* Ẩn mặc định, slide in khi mở */
-                }}
-                [data-testid="stSidebar"][aria-expanded="true"] {{
-                    transform: translateX(0) !important;
-                }}
+       
+            /* Nội dung chính */
+            .main .block-container {{
+                background-color: var(--card-bg) !important;
+                border-radius: 10px !important;
+                padding: 10px !important;
+                backdrop-filter: blur(5px) !important;
+                margin: 10px !important;
+                max-height: 80vh !important;
+                overflow-y: auto !important;
+                margin-top: 0 !important;
+                color: var(--text-color);
             }}
         </style>
         """,
@@ -409,7 +331,6 @@ try:
     )
 except FileNotFoundError:
     st.warning(f"File {bg_file} không tìm thấy. Vui lòng đặt file vào thư mục app.")
-
 # Hiển thị logo (nếu có)
 try:
     col1, col2, col3 = st.columns([1, 2, 1])
@@ -417,33 +338,27 @@ try:
         st.image("logo.png", use_container_width=True)
 except:
     pass
-
 # Hiển thị tiêu đề
 st.markdown(
     f"""<h1 style="text-align: center; font-size: 24px; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px; color: var(--text-color);">{t['title']}</h1>""",
     unsafe_allow_html=True
 )
-
 # OpenAI API
 openai_api_key = st.secrets.get("OPENAI_API_KEY")
 client = OpenAI(api_key=openai_api_key)
-
-# System từ PDF (data), Assistant từ file text động theo ngôn ngữ, Model từ file text
-pdf_data = read_pdf("data.pdf")  # Chỉ dùng cho system prompt (data)
-model_name = rfile("module_chatgpt.txt").strip() or "gpt-4o-mini"  # Model từ file hoặc fallback
-INITIAL_SYSTEM_MESSAGE = {"role": "system", "content": pdf_data}  # System dùng PDF data
+# MỚI: System từ PDF (data), Assistant từ file text động theo ngôn ngữ, Model từ file text
+pdf_data = read_pdf("data.pdf") # Chỉ dùng cho system prompt (data)
+model_name = rfile("module_chatgpt.txt").strip() or "gpt-4o-mini" # Model từ file hoặc fallback
+INITIAL_SYSTEM_MESSAGE = {"role": "system", "content": pdf_data} # System dùng PDF data
 # SỬA: Assistant content động theo ngôn ngữ, với fallback từ translations
 INITIAL_ASSISTANT_MESSAGE = {"role": "assistant", "content": assistant_content or t['assistant_fallback']}
-
 # Khởi tạo session_state.messages nếu chưa có
 if "messages" not in st.session_state:
     st.session_state.messages = [INITIAL_SYSTEM_MESSAGE, INITIAL_ASSISTANT_MESSAGE]
-
 # Nút "Bắt đầu cuộc trò chuyện mới"
 if st.button(t['new_chat']):
     st.session_state.messages = [INITIAL_SYSTEM_MESSAGE, INITIAL_ASSISTANT_MESSAGE]
     st.rerun()
-
 # CSS cải tiến (FIX: Cho phép toggle sidebar với <<<) - Loại bỏ quy tắc chat input ở đây để tránh conflict
 st.markdown(
     f"""
@@ -523,7 +438,7 @@ st.markdown(
         section[data-testid="stSidebar"] {{
             color: var(--text-color) !important;
         }}
-        section[data-testid="stSidebar"] h1, section[data-testid="stSidebar"] h2, section[data-testid="stSidebar"] h3,
+        section[data-testid="stSidebar"] h1, section[data-testid="stSidebar"] h2, section[data-testid="stSidebar"] h3, 
         section[data-testid="stSidebar"] h4, section[data-testid="stSidebar"] h5, section[data-testid="stSidebar"] h6 {{
             color: var(--text-color) !important;
         }}
@@ -607,7 +522,6 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
-
 # Hiển thị lịch sử tin nhắn (trừ system)
 for message in st.session_state.messages:
     if message["role"] == "assistant":
@@ -624,7 +538,6 @@ for message in st.session_state.messages:
             <div class="text">{message["content"]}</div>
         </div>
         ''', unsafe_allow_html=True)
-
 # Ô nhập câu hỏi
 if prompt := st.chat_input(t['chat_placeholder']):
     st.session_state.messages.append({"role": "user", "content": prompt})
