@@ -1,7 +1,7 @@
 import streamlit as st
 from openai import OpenAI
 from base64 import b64encode
-import PyPDF2  # Thêm import để đọc PDF
+import PyPDF2 # Thêm import để đọc PDF
 # MỚI: Set page config để wide layout, giúp sidebar có chỗ hơn và luôn mở
 st.set_page_config(
     layout="wide",
@@ -41,7 +41,7 @@ def read_pdf(pdf_path):
             reader = PyPDF2.PdfReader(file)
             text = ""
             for page in reader.pages:
-                text += page.extract_text() + "\n"  # Thêm newline giữa các trang
+                text += page.extract_text() + "\n" # Thêm newline giữa các trang
             return text.strip()
     except FileNotFoundError:
         st.error(f"File {pdf_path} không tìm thấy. Vui lòng đặt file vào thư mục app.")
@@ -79,7 +79,7 @@ if "theme" not in st.session_state:
 # MỚI: Sidebar cho ngôn ngữ và theme (sẽ luôn mở nhờ page_config)
 with st.sidebar:
     st.header("Cài đặt / Settings")
-  
+ 
     # 1. Chọn ngôn ngữ
     selected_lang = st.selectbox(
         "Ngôn ngữ / Language",
@@ -90,7 +90,7 @@ with st.sidebar:
     if selected_lang != st.session_state.language:
         st.session_state.language = selected_lang
         st.rerun() # Refresh để áp dụng ngôn ngữ mới
-  
+ 
     # 2. Chọn theme
     selected_theme = st.radio(
         "Theme",
@@ -117,9 +117,9 @@ try:
                 --card-bg: {'rgba(255, 255, 255, 0.9)' if st.session_state.theme == 'light' else 'rgba(0, 0, 0, 0.8)'};
                 --assistant-bg: {'#f0f7ff' if st.session_state.theme == 'light' else '#1e293b'};
                 --user-bg: {'#e6ffe6' if st.session_state.theme == 'light' else '#1e4a2e'};
-                --input-bg: {'#fafafa' if st.session_state.theme == 'light' else '#1f2937'};
+                --input-bg: {'rgba(255, 255, 255, 0.1)' if st.session_state.theme == 'light' else 'rgba(0, 0, 0, 0.3)'}; /* SỬA: Giảm opacity để transparent hơn */
             }}
-          
+         
             /* Background đơn giản đã hoạt động - thêm transparent cho header và footer, fix crop top */
             .stAppViewContainer {{
                 background-image: url('data:image/png;base64,{bg_image_base64}');
@@ -138,7 +138,7 @@ try:
                 background-color: var(--bg-color);
                 color: var(--text-color);
             }}
-         
+        
             /* Làm header transparent để thấy background, loại bỏ padding top */
             section[data-testid="stDecoration"] {{
                 background: transparent !important;
@@ -150,20 +150,33 @@ try:
                 padding-top: 0 !important;
                 margin-top: 0 !important;
             }}
-         
-            /* Làm footer (chat input) transparent background */
+        
+            /* SỬA: Làm footer (chat input) transparent hoàn toàn hơn, loại bỏ nền trắng */
             [data-testid="stChatInput"] {{
                 background: transparent !important;
                 border: none !important;
                 color: var(--text-color);
+                /* Thêm: Đảm bảo toàn bộ container input transparent */
+                box-shadow: none !important;
             }}
             [data-testid="stChatInput"] > div > div {{
-                background: var(--input-bg) !important;
+                background: transparent !important; /* SỬA: Transparent hoàn toàn, không dùng var(--input-bg) nữa */
+                border: 1px solid rgba(255, 255, 255, 0.2) !important; /* Thêm border nhẹ để phân biệt */
                 border-radius: 10px !important;
-                backdrop-filter: blur(5px) !important;
+                backdrop-filter: blur(5px) !important; /* Giữ blur để text dễ đọc trên background */
                 color: var(--text-color);
+                padding: 8px 12px !important; /* Thêm padding cho thoải mái */
             }}
-         
+            [data-testid="stChatInput"] input {{
+                background: transparent !important; /* Đảm bảo input field bên trong cũng transparent */
+                border: none !important;
+                color: var(--text-color);
+                outline: none !important;
+            }}
+            [data-testid="stChatInput"] input::placeholder {{
+                color: rgba(255, 255, 255, 0.7) !important; /* Placeholder dễ thấy hơn trên background */
+            }}
+        
             /* Nội dung chính */
             .main .block-container {{
                 background-color: var(--card-bg) !important;
@@ -198,11 +211,11 @@ st.markdown(
 openai_api_key = st.secrets.get("OPENAI_API_KEY")
 client = OpenAI(api_key=openai_api_key)
 # MỚI: System từ PDF (data), Assistant từ file text cũ, Model từ file text
-pdf_data = read_pdf("data.pdf")  # Chỉ dùng cho system prompt (data)
-assistant_content = rfile("02.assistant.txt")  # Lời chào giữ nguyên
-model_name = rfile("module_chatgpt.txt").strip() or "gpt-4o-mini"  # Model từ file hoặc fallback
-INITIAL_SYSTEM_MESSAGE = {"role": "system", "content": pdf_data}  # System dùng PDF data
-INITIAL_ASSISTANT_MESSAGE = {"role": "assistant", "content": assistant_content or "Xin chào! Tôi là trợ lý AI của bạn. Hãy hỏi tôi bất cứ điều gì."}  # Fallback nếu file không có
+pdf_data = read_pdf("data.pdf") # Chỉ dùng cho system prompt (data)
+assistant_content = rfile("02.assistant.txt") # Lời chào giữ nguyên
+model_name = rfile("module_chatgpt.txt").strip() or "gpt-4o-mini" # Model từ file hoặc fallback
+INITIAL_SYSTEM_MESSAGE = {"role": "system", "content": pdf_data} # System dùng PDF data
+INITIAL_ASSISTANT_MESSAGE = {"role": "assistant", "content": assistant_content or "Xin chào! Tôi là trợ lý AI của bạn. Hãy hỏi tôi bất cứ điều gì."} # Fallback nếu file không có
 # Khởi tạo session_state.messages nếu chưa có
 if "messages" not in st.session_state:
     st.session_state.messages = [INITIAL_SYSTEM_MESSAGE, INITIAL_ASSISTANT_MESSAGE]
@@ -372,5 +385,5 @@ if prompt := st.chat_input(t['chat_placeholder']):
         <div class="text">{response}</div>
     </div>
     ''', unsafe_allow_html=True)
-  
+ 
     st.session_state.messages.append({"role": "assistant", "content": response})
