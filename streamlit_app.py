@@ -474,6 +474,23 @@ st.markdown(
         section[data-testid="stSidebar"] div[data-testid="stRadio"] label span {{
             color: var(--text-color) !important;
         }}
+        /* SỬA THÊM: Target BaseWeb radio option content và label text cụ thể hơn */
+        section[data-testid="stSidebar"] [data-baseweb="radio-group"] label [role="radio"] span {{
+            color: var(--text-color) !important;
+        }}
+        section[data-testid="stSidebar"] .rc-option__content {{
+            color: var(--text-color) !important;
+        }}
+        section[data-testid="stSidebar"] .rc-option__content span {{
+            color: var(--text-color) !important;
+        }}
+        section[data-testid="stSidebar"] [data-baseweb="radio"] [role="radio"] {{
+            color: var(--text-color) !important;
+        }}
+        /* Force cho tất cả spans và divs con trong radio labels */
+        section[data-testid="stSidebar"] [data-testid="stRadio"] label * {{
+            color: var(--text-color) !important;
+        }}
         /* Hiển thị nút toggle sidebar (<<<) để có thể thu gọn/mở rộng */
         [data-testid="collapsedControl"] {{
             display: block !important; /* Hiển thị nút collapse */
