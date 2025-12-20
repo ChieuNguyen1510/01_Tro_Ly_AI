@@ -139,10 +139,12 @@ try:
                 padding: 0;
                 margin-top: -10px !important;
                 color: var(--text-color);
+                overflow-x: hidden; /* SỬA: Ngăn overflow ngang từ sidebar collapsed */
             }}
             body {{
                 background-color: var(--bg-color);
                 color: var(--text-color);
+                overflow-x: hidden; /* SỬA: Backup overflow hidden cho body */
             }}
        
             /* Làm header transparent để thấy background, loại bỏ padding top */
@@ -425,41 +427,50 @@ st.markdown(
         div.stButton > button:hover {{
             background-color: #45a049 !important;
         }}
-        /* SỬA: FIX sidebar collapse - Bỏ !important cho width để Streamlit override khi collapsed, tránh overlap */
+        /* SỬA MỚI: FIX sidebar collapse hoàn toàn - Không force width expanded, force width 0 khi collapsed */
         section[data-testid="stSidebar"] {{
-            width: 300px; /* Không !important để Streamlit có thể set width: 0 khi collapsed */
+            width: 300px; /* Không !important để Streamlit override khi collapsed */
             min-width: 300px; /* Không !important */
             max-width: 300px; /* Không !important */
             background-color: var(--bg-color) !important;
             color: var(--text-color) !important;
-            transition: transform 0.2s ease-in-out; /* Mượt mà khi slide */
+            transition: transform 0.2s ease-in-out, width 0.2s ease-in-out; /* Mượt mà width + transform */
+            z-index: 1; /* Giữ sidebar dưới main */
             /* Không force transform nữa, để Streamlit xử lý collapse */
         }}
-        /* Đảm bảo nút toggle (<<< / >>>) luôn hiển thị và không bị che */
+        /* Force sidebar ẩn hoàn toàn khi collapsed (target inline transform hoặc class) */
+        section[data-testid="stSidebar"][style*="translateX(-"] {{
+            width: 0 !important;
+            transform: translateX(-100%) !important;
+            overflow: hidden !important; /* Ẩn nội dung thừa */
+        }}
+        /* Backup target class collapsed (Streamlit thường dùng css-1d391kg hoặc tương tự cho collapsed) */
+        section[data-testid="stSidebar"].css-1d391kg, /* Thay .css-1d391kg bằng class thực tế nếu khác */
+        section[data-testid="stSidebar"][aria-expanded="false"] {{ /* Nếu có aria attr */
+            width: 0 !important;
+            transform: translateX(-100%) !important;
+            overflow: hidden !important;
+        }}
+        /* Đảm bảo main content adjust và không overlap */
+        .main {{
+            margin-left: 0 !important; /* Default 0 cho wide layout khi collapsed */
+            transition: margin-left 0.2s ease-in-out;
+        }}
+        /* Nếu sidebar expanded, main margin-left: 300px (backup nếu cần) */
+        section[data-testid="stSidebar"]:not([style*="translateX(-"]) ~ .main {{
+            margin-left: 300px !important;
+        }}
+        /* Đảm bảo nút toggle luôn visible và không bị che khi collapsed */
         [data-testid="collapsedControl"] {{
             display: block !important;
-            z-index: 1000 !important; /* Đảm bảo nút ở trên cùng */
+            z-index: 1000 !important;
+            position: relative !important; /* Giữ nút ở vị trí đúng */
+            background: var(--bg-color) !important; /* Nền theo theme */
+            color: var(--text-color) !important;
+            width: auto !important; /* Không bị ảnh hưởng bởi width 0 */
         }}
-        /* Khi sidebar collapsed (Streamlit set inline style transform: translateX(-100%); width: 0), force margin-left cho main = 0 */
-        section[data-testid="stSidebar"][style*="translateX(-100%)"],
-        section[data-testid="stSidebar"][style*="width: 0"] {{
-            margin-left: 0 !important;
-            transform: translateX(-100%) !important; /* Backup force slide out */
-            width: 0 !important; /* Force width 0 nếu cần */
-        }}
-        .main:has(section[data-testid="stSidebar"][style*="translateX(-100%)"]) {{
-            margin-left: 0 !important; /* Adjust main khi sidebar collapsed */
-            padding-left: 0 !important;
-        }}
-        /* Backup cho trường hợp không detect inline style (nếu browser cũ) */
-        section[data-testid="stSidebar"].css-1d391kg {{ /* Thường là class collapsed của Streamlit */
-            transform: translateX(-100%) !important;
-            width: 0 !important;
-            margin-left: 0 !important;
-        }}
-        .main:has(section[data-testid="stSidebar"].css-1d391kg) {{
-            margin-left: 0 !important;
-            padding-left: 0 !important;
+        [data-testid="collapsedControl"] svg {{
+            fill: var(--text-color) !important;
         }}
         /* SỬA: Cải thiện sidebar dark theme - Đảm bảo chữ trắng và elements con inherit đúng */
         section[data-testid="stSidebar"] {{
@@ -535,6 +546,7 @@ st.markdown(
                 [style*="translateX(-100%)"] {{
                     transform: translateX(-100%) !important;
                     width: 0 !important;
+                    overflow: hidden !important;
                 }}
             }}
             .main {{
