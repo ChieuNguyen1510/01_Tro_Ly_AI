@@ -2,6 +2,7 @@ import streamlit as st
 from openai import OpenAI
 from base64 import b64encode
 import PyPDF2 # Thêm import để đọc PDF
+import streamlit.components.v1 as components  # MỚI: Để inject JS an toàn
 # MỚI: Set page config để wide layout, giúp sidebar có chỗ hơn và luôn mở
 st.set_page_config(
     layout="wide",
@@ -361,9 +362,9 @@ if st.button(t['new_chat']):
     st.rerun()
 # CSS cải tiến (FIX: Cho phép toggle sidebar với <<<) - Loại bỏ quy tắc chat input ở đây để tránh conflict
 st.markdown(
-    f"""
+    """
     <style>
-        .message {{
+        .message {
             padding: 12px !important;
             border-radius: 12px !important;
             max-width: 75% !important;
@@ -373,46 +374,46 @@ st.markdown(
             margin: 8px 0 !important;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
             color: var(--text-color);
-        }}
-        .assistant {{
+        }
+        .assistant {
             background-color: var(--assistant-bg) !important;
-        }}
-        .user {{
+        }
+        .user {
             background-color: var(--user-bg) !important;
             text-align: right !important;
             margin-left: auto !important;
             flex-direction: row-reverse !important;
-        }}
-        .icon {{
+        }
+        .icon {
             width: 32px !important;
             height: 32px !important;
             border-radius: 50% !important;
             border: 1px solid #ddd !important;
-        }}
-        .text {{
+        }
+        .text {
             flex: 1 !important;
             font-size: 16px !important;
             line-height: 1.4 !important;
             color: var(--text-color);
-        }}
-        .typing {{
+        }
+        .typing {
             font-style: italic !important;
             color: #888 !important;
             padding: 5px 10px !important;
             display: flex !important;
             align-items: center !important;
-        }}
-        @keyframes blink {{
-            0% {{ opacity: 1; }}
-            50% {{ opacity: 0.5; }}
-            100% {{ opacity: 1; }}
-        }}
-        .typing::after {{
-            content: "{t['typing']}" !important;
+        }
+        @keyframes blink {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        .typing::after {
+            content: """ + '"' + t['typing'] + '"' + """ !important;
             animation: blink 1s infinite !important;
-        }}
+        }
         /* Tùy chỉnh nút "New chat" */
-        div.stButton > button {{
+        div.stButton > button {
             background-color: #4CAF50 !important;
             color: white !important;
             border-radius: 2px solid #FFFFFF !important;
@@ -421,88 +422,88 @@ st.markdown(
             border: none !important;
             display: block !important;
             margin: 10px 0px !important;
-        }}
-        div.stButton > button:hover {{
+        }
+        div.stButton > button:hover {
             background-color: #45a049 !important;
-        }}
+        }
         /* FIX: Cho phép toggle sidebar - Không force mở nữa, hiển thị nút <<< */
-        section[data-testid="stSidebar"] {{
+        section[data-testid="stSidebar"] {
             width: 300px !important;
             min-width: 300px !important;
             max-width: 300px !important;
             background-color: var(--bg-color) !important;
             color: var(--text-color) !important;
             /* Không force transform nữa, để Streamlit xử lý collapse */
-        }}
+        }
         /* SỬA MỚI: Khi sidebar collapsed (có class 'sidebar-collapsed' trên body), làm nền transparent */
-        body.sidebar-collapsed section[data-testid="stSidebar"] {{
+        body.sidebar-collapsed section[data-testid="stSidebar"] {
             background: transparent !important;
             backdrop-filter: blur(5px) !important; /* Giữ blur nhẹ để không hoàn toàn mất */
-        }}
+        }
         /* SỬA: Cải thiện sidebar dark theme - Đảm bảo chữ trắng và elements con inherit đúng */
-        section[data-testid="stSidebar"] {{
+        section[data-testid="stSidebar"] {
             color: var(--text-color) !important;
-        }}
+        }
         section[data-testid="stSidebar"] h1, section[data-testid="stSidebar"] h2, section[data-testid="stSidebar"] h3,
-        section[data-testid="stSidebar"] h4, section[data-testid="stSidebar"] h5, section[data-testid="stSidebar"] h6 {{
+        section[data-testid="stSidebar"] h4, section[data-testid="stSidebar"] h5, section[data-testid="stSidebar"] h6 {
             color: var(--text-color) !important;
-        }}
-        section[data-testid="stSidebar"] label {{
+        }
+        section[data-testid="stSidebar"] label {
             color: var(--text-color) !important;
-        }}
-        section[data-testid="stSidebar"] select, section[data-testid="stSidebar"] input[type="radio"] {{
+        }
+        section[data-testid="stSidebar"] select, section[data-testid="stSidebar"] input[type="radio"] {
             color: var(--text-color) !important;
             background-color: var(--bg-color) !important;
             border-color: var(--border-color) !important;
-        }}
-        section[data-testid="stSidebar"] select option {{
+        }
+        section[data-testid="stSidebar"] select option {
             color: var(--text-color) !important;
             background-color: var(--bg-color) !important;
-        }}
-        section[data-testid="stSidebar"] .stRadio > div > label {{
+        }
+        section[data-testid="stSidebar"] .stRadio > div > label {
             color: var(--text-color) !important;
-        }}
-        section[data-testid="stSidebar"] .stSelectbox > div > label {{
+        }
+        section[data-testid="stSidebar"] .stSelectbox > div > label {
             color: var(--text-color) !important;
-        }}
+        }
         /* SỬA MỚI: Target sâu hơn cho radio options text (light/dark) - Đảm bảo chữ trắng ở dark theme */
-        section[data-testid="stSidebar"] .stRadio > label > div > div > span {{
+        section[data-testid="stSidebar"] .stRadio > label > div > div > span {
             color: var(--text-color) !important;
-        }}
-        section[data-testid="stSidebar"] [data-baseweb="radio"] {{
+        }
+        section[data-testid="stSidebar"] [data-baseweb="radio"] {
             color: var(--text-color) !important;
-        }}
-        section[data-testid="stSidebar"] [data-baseweb="radio"] span {{
+        }
+        section[data-testid="stSidebar"] [data-baseweb="radio"] span {
             color: var(--text-color) !important;
-        }}
+        }
         /* Áp dụng cho tất cả text elements trong radio */
-        section[data-testid="stSidebar"] div[data-testid="stRadio"] label span {{
+        section[data-testid="stSidebar"] div[data-testid="stRadio"] label span {
             color: var(--text-color) !important;
-        }}
+        }
         /* SỬA THÊM: Target BaseWeb radio option content và label text cụ thể hơn */
-        section[data-testid="stSidebar"] [data-baseweb="radio-group"] label [role="radio"] span {{
+        section[data-testid="stSidebar"] [data-baseweb="radio-group"] label [role="radio"] span {
             color: var(--text-color) !important;
-        }}
-        section[data-testid="stSidebar"] .rc-option__content {{
+        }
+        section[data-testid="stSidebar"] .rc-option__content {
             color: var(--text-color) !important;
-        }}
-        section[data-testid="stSidebar"] .rc-option__content span {{
+        }
+        section[data-testid="stSidebar"] .rc-option__content span {
             color: var(--text-color) !important;
-        }}
-        section[data-testid="stSidebar"] [data-baseweb="radio"] [role="radio"] {{
+        }
+        section[data-testid="stSidebar"] [data-baseweb="radio"] [role="radio"] {
             color: var(--text-color) !important;
-        }}
+        }
         /* Force cho tất cả spans và divs con trong radio labels */
-        section[data-testid="stSidebar"] [data-testid="stRadio"] label * {{
+        section[data-testid="stSidebar"] [data-testid="stRadio"] label * {
             color: var(--text-color) !important;
-        }}
+        }
         /* Hiển thị nút toggle sidebar (<<<) để có thể thu gọn/mở rộng */
-        [data-testid="collapsedControl"] {{
+        [data-testid="collapsedControl"] {
             display: block !important; /* Hiển thị nút collapse */
-        }}
+        }
         /* Media query cho mobile: Sidebar có thể slide, nhưng mở mặc định */
-        @media (max-width: 768px) {{
-            section[data-testid="stSidebar"] {{
+        @media (max-width: 768px) {
+            section[data-testid="stSidebar"] {
                 width: 100% !important;
                 min-width: unset !important;
                 position: fixed !important;
@@ -513,43 +514,50 @@ st.markdown(
                 /* Không force translateX(0), để có thể slide khi toggle */
                 box-shadow: 2px 0 5px rgba(0,0,0,0.1) !important;
                 color: var(--text-color) !important; /* Áp dụng theme cho mobile sidebar */
-            }}
-            .main {{
+            }
+            .main {
                 margin-left: 0 !important;
                 padding-left: 0 !important;
-            }}
+            }
             /* Hiển thị toggle trên mobile */
-            [data-testid="collapsedControl"] {{
+            [data-testid="collapsedControl"] {
                 display: block !important;
-            }}
+            }
             /* SỬA MỚI: Trên mobile, khi collapsed cũng transparent tương tự */
-            body.sidebar-collapsed section[data-testid="stSidebar"] {{
+            body.sidebar-collapsed section[data-testid="stSidebar"] {
                 background: transparent !important;
                 backdrop-filter: blur(5px) !important;
-            }}
-        }}
-    </style>
-    <script>
-        // JS để detect toggle sidebar và add/remove class 'sidebar-collapsed' trên body
-        document.addEventListener('DOMContentLoaded', function() {
-            const sidebarToggle = document.querySelector('[data-testid="collapsedControl"]');
-            if (sidebarToggle) {
-                sidebarToggle.addEventListener('click', function() {
-                    // Toggle class trên body dựa trên trạng thái sidebar (kiểm tra transform)
-                    const sidebar = document.querySelector('section[data-testid="stSidebar"]');
-                    if (sidebar && window.getComputedStyle(sidebar).transform.includes('-100%')) {
-                        // Collapsed: add class
-                        document.body.classList.add('sidebar-collapsed');
-                    } else {
-                        // Expanded: remove class
-                        document.body.classList.remove('sidebar-collapsed');
-                    }
-                });
             }
-        });
-    </script>
+        }
+    </style>
     """,
     unsafe_allow_html=True
+)
+# MỚI: Inject JS riêng biệt bằng components.v1.html để tránh syntax error trong markdown string
+components.html(
+    f"""
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {{
+            const sidebarToggle = document.querySelector('[data-testid="collapsedControl"]');
+            if (sidebarToggle) {{
+                sidebarToggle.addEventListener('click', function() {{
+                    // Delay nhỏ để transform thay đổi sau click
+                    setTimeout(function() {{
+                        const sidebar = document.querySelector('section[data-testid="stSidebar"]');
+                        if (sidebar && window.getComputedStyle(sidebar).transform.includes('-100%')) {{
+                            // Collapsed: add class
+                            document.body.classList.add('sidebar-collapsed');
+                        }} else {{
+                            // Expanded: remove class
+                            document.body.classList.remove('sidebar-collapsed');
+                        }}
+                    }}, 100);
+                }});
+            }}
+        }});
+    </script>
+    """,
+    height=0
 )
 # Hiển thị lịch sử tin nhắn (trừ system)
 for message in st.session_state.messages:
