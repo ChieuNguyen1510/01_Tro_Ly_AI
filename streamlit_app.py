@@ -427,7 +427,7 @@ st.markdown(
         div.stButton > button:hover {{
             background-color: #45a049 !important;
         }}
-        /* SỬA MỚI: FIX sidebar collapse hoàn toàn - Không force width expanded, force width 0 khi collapsed */
+        /* SỬA MỚI: FIX sidebar collapse hoàn toàn - Không force width expanded, force width 0 khi collapsed, nhưng giữ nút toggle visible */
         section[data-testid="stSidebar"] {{
             width: 300px; /* Không !important để Streamlit override khi collapsed */
             min-width: 300px; /* Không !important */
@@ -443,6 +443,7 @@ st.markdown(
             width: 0 !important;
             transform: translateX(-100%) !important;
             overflow: hidden !important; /* Ẩn nội dung thừa */
+            margin-left: -300px !important; /* Backup pull left thêm */
         }}
         /* Backup target class collapsed (Streamlit thường dùng css-1d391kg hoặc tương tự cho collapsed) */
         section[data-testid="stSidebar"].css-1d391kg, /* Thay .css-1d391kg bằng class thực tế nếu khác */
@@ -450,6 +451,7 @@ st.markdown(
             width: 0 !important;
             transform: translateX(-100%) !important;
             overflow: hidden !important;
+            margin-left: -300px !important;
         }}
         /* Đảm bảo main content adjust và không overlap */
         .main {{
@@ -460,17 +462,33 @@ st.markdown(
         section[data-testid="stSidebar"]:not([style*="translateX(-"]) ~ .main {{
             margin-left: 300px !important;
         }}
-        /* Đảm bảo nút toggle luôn visible và không bị che khi collapsed */
+        /* SỬA MỚI: Force nút toggle luôn visible, đặc biệt khi collapsed - Position fixed để không bị che */
         [data-testid="collapsedControl"] {{
             display: block !important;
-            z-index: 1000 !important;
-            position: relative !important; /* Giữ nút ở vị trí đúng */
-            background: var(--bg-color) !important; /* Nền theo theme */
+            z-index: 1001 !important; /* Cao hơn sidebar */
+            position: fixed !important; /* Fixed để luôn ở bên trái màn hình */
+            left: 0 !important;
+            top: 50% !important;
+            transform: translateY(-50%) !important;
+            background: var(--bg-color) !important;
             color: var(--text-color) !important;
+            border: none !important;
+            border-radius: 0 10px 10px 0 !important; /* Bo góc phải */
+            padding: 10px !important;
+            cursor: pointer !important;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1) !important; /* Shadow để nổi bật */
             width: auto !important; /* Không bị ảnh hưởng bởi width 0 */
+            height: auto !important;
+            margin: 0 !important;
         }}
         [data-testid="collapsedControl"] svg {{
             fill: var(--text-color) !important;
+            width: 20px !important;
+            height: 20px !important;
+        }}
+        /* Ẩn nút toggle khi sidebar expanded (Streamlit tự handle, nhưng backup) */
+        section[data-testid="stSidebar"]:not([style*="translateX(-"]) [data-testid="collapsedControl"] {{
+            display: none !important; /* Ẩn <<< khi mở */
         }}
         /* SỬA: Cải thiện sidebar dark theme - Đảm bảo chữ trắng và elements con inherit đúng */
         section[data-testid="stSidebar"] {{
@@ -556,6 +574,11 @@ st.markdown(
             /* Hiển thị toggle trên mobile */
             [data-testid="collapsedControl"] {{
                 display: block !important;
+                position: fixed !important;
+                left: 0 !important;
+                top: 10px !important; /* Góc trên trái cho mobile */
+                transform: none !important;
+                border-radius: 0 0 10px 0 !important;
             }}
         }}
     </style>
