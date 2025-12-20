@@ -35,16 +35,20 @@ def img_to_base64(img_path):
 # Dictionary dịch ngôn ngữ (dễ mở rộng)
 translations = {
     'vi': {
-        'title': 'Chào mừng đến với Chatbot AI',  # Sử dụng rfile("00.xinchao.txt") nếu muốn từ file
+        'title': 'Chào mừng đến với Chatbot AI',
         'new_chat': 'Bắt đầu cuộc trò chuyện mới',
         'chat_placeholder': 'Nhập câu hỏi của bạn ở đây...',
         'typing': 'Assistant đang gõ...',
+        'open_settings': '🔧 Mở cài đặt (Ngôn ngữ/Theme)',
+        'settings_header': 'Cài đặt',
     },
     'en': {
         'title': 'Welcome to AI Chatbot',
         'new_chat': 'New chat',
         'chat_placeholder': 'Enter your question here...',
         'typing': 'Assistant is typing...',
+        'open_settings': '🔧 Open Settings (Language/Theme)',
+        'settings_header': 'Settings',
     }
 }
 
@@ -60,15 +64,19 @@ if "theme" not in st.session_state:
 if "sidebar_open" not in st.session_state:
     st.session_state.sidebar_open = True
 
-# Sidebar với tùy chọn toggle
+# Lấy text theo ngôn ngữ hiện tại (để dùng trước sidebar)
+t = translations[st.session_state.language]
+
+# Nút mở cài đặt luôn hiển thị ở đầu (dễ thấy, tránh mất sidebar)
+if not st.session_state.sidebar_open:
+    if st.button(t['open_settings']):
+        st.session_state.sidebar_open = True
+        st.rerun()
+
+# Sidebar chỉ render nếu open
 if st.session_state.sidebar_open:
     with st.sidebar:
-        st.header("Cài đặt / Settings")
-        
-        # Checkbox để toggle sidebar (ẩn/hiện)
-        if st.checkbox("Ẩn sidebar / Hide sidebar", key="toggle_sidebar"):
-            st.session_state.sidebar_open = False
-            st.rerun()
+        st.header(t['settings_header'])
         
         # 1. Chọn ngôn ngữ
         selected_lang = st.selectbox(
@@ -79,7 +87,7 @@ if st.session_state.sidebar_open:
         )
         if selected_lang != st.session_state.language:
             st.session_state.language = selected_lang
-            st.rerun()
+            st.rerun()  # Cập nhật translations
         
         # 2. Chọn theme
         selected_theme = st.radio(
@@ -91,17 +99,10 @@ if st.session_state.sidebar_open:
             st.session_state.theme = selected_theme
             st.rerun()
 
-# Nếu sidebar ẩn, hiển thị nút mở ở main area
-if not st.session_state.sidebar_open:
-    st.warning("Sidebar đang ẩn. Click nút bên dưới để mở cài đặt.")
-    if st.button("🔧 Mở sidebar cài đặt"):
-        st.session_state.sidebar_open = True
-        st.rerun()
-
-# Lấy text theo ngôn ngữ hiện tại
+# Cập nhật translations sau khi sidebar có thể thay đổi ngôn ngữ
 t = translations[st.session_state.language]
 
-# CSS cho background với base64 (cải tiến để cover thêm phần trên, loại bỏ margin/padding top)
+# CSS cho background với base64
 try:
     bg_image_base64 = img_to_base64("background.png")
     st.markdown(
@@ -121,14 +122,14 @@ try:
             .stAppViewContainer {{
                 background-image: url('data:image/png;base64,{bg_image_base64}');
                 background-size: cover;
-                background-position: center top; /* Căn giữa theo top để tránh crop trên */
+                background-position: center top;
                 background-repeat: no-repeat;
                 background-attachment: fixed;
                 height: 100vh;
                 width: 100vw;
                 margin: 0;
                 padding: 0;
-                margin-top: -10px !important; /* Kéo lên để cover phần top bị mất */
+                margin-top: -10px !important;
                 color: var(--text-color);
             }}
             body {{
@@ -170,7 +171,7 @@ try:
                 margin: 10px !important;
                 max-height: 80vh !important;
                 overflow-y: auto !important;
-                margin-top: 0 !important; /* Đảm bảo không margin top thêm */
+                margin-top: 0 !important;
                 color: var(--text-color);
             }}
         </style>
@@ -188,7 +189,7 @@ try:
 except:
     pass
 
-# Hiển thị tiêu đề (Sử dụng text từ translations)
+# Hiển thị tiêu đề
 st.markdown(
     f"""<h1 style="text-align: center; font-size: 24px; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px; color: var(--text-color);">{t['title']}</h1>""",
     unsafe_allow_html=True
@@ -208,9 +209,7 @@ if "messages" not in st.session_state:
 
 # Nút "Bắt đầu cuộc trò chuyện mới" (Text động)
 if st.button(t['new_chat']):
-    # Reset messages về trạng thái ban đầu
     st.session_state.messages = [INITIAL_SYSTEM_MESSAGE, INITIAL_ASSISTANT_MESSAGE]
-    # Làm mới giao diện bằng cách rerun ứng dụng
     st.rerun()
 
 # CSS cải tiến (Áp dụng theme cho messages và buttons)
@@ -262,7 +261,7 @@ st.markdown(
             100% {{ opacity: 1; }}
         }}
         .typing::after {{
-            content: "{t['typing']}" !important;  /* Text typing động */
+            content: "{t['typing']}" !important;
             animation: blink 1s infinite !important;
         }}
         [data-testid="stChatInput"] {{
@@ -281,15 +280,15 @@ st.markdown(
             font-size: 14px !important;
             border: none !important;
             display: block !important;
-            margin: 10px 0px !important; /* Căn giữa nút */
+            margin: 10px 0px !important;
         }}
         div.stButton > button:hover {{
             background-color: #45a049 !important;
         }}
         /* Sidebar style cho theme */
-        .css-1d391kg {{
+        section[data-testid="stSidebar"] {{
             background-color: var(--bg-color) !important;
-            color: var(--text-color);
+            color: var(--text-color) !important;
         }}
     </style>
     """,
@@ -325,22 +324,25 @@ if prompt := st.chat_input(t['chat_placeholder']):
     # Assistant đang trả lời...
     typing_placeholder = st.empty()
     typing_placeholder.markdown(
-        '<div class="typing"></div>',  # Sử dụng CSS để thêm text động
+        '<div class="typing"></div>',
         unsafe_allow_html=True
     )
     # Gọi API
     response = ""
-    stream = client.chat.completions.create(
-        model=rfile("module_chatgpt.txt").strip(),
-        messages=[{"role": m["role"], "content": m["content"]} for m in st.session_state.messages],
-        stream=True,
-    )
-    for chunk in stream:
-        if chunk.choices:
-            response += chunk.choices[0].delta.content or ""
-    # Xóa dòng "Assistant is typing..."
+    try:
+        stream = client.chat.completions.create(
+            model=rfile("module_chatgpt.txt").strip(),
+            messages=[{"role": m["role"], "content": m["content"]} for m in st.session_state.messages],
+            stream=True,
+        )
+        for chunk in stream:
+            if chunk.choices:
+                response += chunk.choices[0].delta.content or ""
+    except Exception as e:
+        response = f"Lỗi API: {str(e)}. Kiểm tra API key."
+    # Xóa dòng typing
     typing_placeholder.empty()
-    # Hiển thị phản hồi từ assistant
+    # Hiển thị phản hồi
     st.markdown(f'''
     <div class="message assistant">
         <img src="data:image/png;base64,{assistant_icon}" class="icon" />
