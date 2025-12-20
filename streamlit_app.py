@@ -142,9 +142,11 @@ try:
                 height: 100vh !important;
                 overflow-y: auto !important;
             }}
-            /* Ẩn arrow toggle sidebar nếu không cần */
+            /* FIX: KHÔNG ẨN collapsedControl nữa - để người dùng có thể mở sidebar nếu bị collapse */
             [data-testid="collapsedControl"] {{
-                display: none !important;
+                display: block !important; /* Hiển thị nút toggle */
+                z-index: 10000 !important;
+                background-color: var(--sidebar-bg) !important;
             }}
           
             /* Làm header transparent để thấy background, loại bỏ padding top */
