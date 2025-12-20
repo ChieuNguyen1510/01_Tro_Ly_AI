@@ -409,7 +409,7 @@ st.markdown(
             100% { opacity: 1; }
         }
         .typing::after {
-            content: """ + '"' + t['typing'] + '"' + """ !important;
+            content: \"\"\" + '"' + t['typing'] + '"' + \"\"\" !important;
             animation: blink 1s infinite !important;
         }
         /* Tùy chỉnh nút "New chat" */
@@ -534,27 +534,51 @@ st.markdown(
     unsafe_allow_html=True
 )
 # MỚI: Inject JS riêng biệt bằng components.v1.html để tránh syntax error trong markdown string
+# SỬA: Cải thiện JS để detect collapsed bằng cách check width thay vì transform (ổn định hơn)
 components.html(
     f"""
     <script>
-        document.addEventListener('DOMContentLoaded', function() {{
-            const sidebarToggle = document.querySelector('[data-testid="collapsedControl"]');
-            if (sidebarToggle) {{
-                sidebarToggle.addEventListener('click', function() {{
-                    // Delay nhỏ để transform thay đổi sau click
-                    setTimeout(function() {{
-                        const sidebar = document.querySelector('section[data-testid="stSidebar"]');
-                        if (sidebar && window.getComputedStyle(sidebar).transform.includes('-100%')) {{
-                            // Collapsed: add class
-                            document.body.classList.add('sidebar-collapsed');
-                        }} else {{
-                            // Expanded: remove class
-                            document.body.classList.remove('sidebar-collapsed');
-                        }}
-                    }}, 100);
-                }});
+        // Chờ DOM load và Streamlit render xong
+        function initSidebarObserver() {{
+            const sidebar = document.querySelector('section[data-testid="stSidebar"]');
+            const toggleButton = document.querySelector('[data-testid="collapsedControl"]');
+            if (!sidebar || !toggleButton) {{
+                // Retry sau 500ms nếu chưa ready
+                setTimeout(initSidebarObserver, 500);
+                return;
             }}
-        }});
+            // Observer để watch thay đổi width/transform
+            const observer = new MutationObserver(function(mutations) {{
+                mutations.forEach(function(mutation) {{
+                    if (mutation.type === 'attributes' && mutation.attributeName === 'style') {{
+                        updateSidebarClass();
+                    }}
+                }});
+            }});
+            observer.observe(sidebar, {{ attributes: true }});
+            // Function để update class dựa trên width (collapsed nếu width nhỏ)
+            function updateSidebarClass() {{
+                const computedStyle = window.getComputedStyle(sidebar);
+                const sidebarWidth = sidebar.offsetWidth;
+                if (sidebarWidth < 50) {{  // Collapsed nếu width < 50px
+                    document.body.classList.add('sidebar-collapsed');
+                }} else {{
+                    document.body.classList.remove('sidebar-collapsed');
+                }}
+            }}
+            // Initial check
+            updateSidebarClass();
+            // Listen click toggle để force check (backup)
+            toggleButton.addEventListener('click', function() {{
+                setTimeout(updateSidebarClass, 150);  // Delay để animation hoàn thành
+            }});
+        }}
+        // Start observer sau DOM ready
+        if (document.readyState === 'loading') {{
+            document.addEventListener('DOMContentLoaded', initSidebarObserver);
+        }} else {{
+            initSidebarObserver();
+        }}
     </script>
     """,
     height=0
