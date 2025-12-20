@@ -125,7 +125,7 @@ try:
                 --placeholder-color: {'rgba(0, 0, 0, 0.5)' if st.session_state.theme == 'light' else 'rgba(255, 255, 255, 0.7)'};
                 --input-inner-bg: {'rgba(255, 255, 255, 0.2)' if st.session_state.theme == 'light' else 'rgba(255, 255, 255, 0.1)'};
             }}
-        
+       
             /* Background đơn giản đã hoạt động - thêm transparent cho header và footer, fix crop top */
             .stAppViewContainer {{
                 background-image: url('data:image/png;base64,{bg_image_base64}');
@@ -139,14 +139,12 @@ try:
                 padding: 0;
                 margin-top: -10px !important;
                 color: var(--text-color);
-                overflow-x: hidden; /* SỬA: Ngăn overflow ngang từ sidebar collapsed */
             }}
             body {{
                 background-color: var(--bg-color);
                 color: var(--text-color);
-                overflow-x: hidden; /* SỬA: Backup overflow hidden cho body */
             }}
-       
+      
             /* Làm header transparent để thấy background, loại bỏ padding top */
             section[data-testid="stDecoration"] {{
                 background: transparent !important;
@@ -158,7 +156,7 @@ try:
                 padding-top: 0 !important;
                 margin-top: 0 !important;
             }}
-       
+      
             /* SỬA: Làm footer (chat input) transparent hoàn toàn, loại bỏ nền trắng - Target các selector sâu hơn */
             [data-testid="stBottom"] > div {{
                 background: transparent !important;
@@ -314,7 +312,7 @@ try:
                     margin: 0 !important;
                 }}
             }}
-       
+      
             /* Nội dung chính */
             .main .block-container {{
                 background-color: var(--card-bg) !important;
@@ -427,74 +425,25 @@ st.markdown(
         div.stButton > button:hover {{
             background-color: #45a049 !important;
         }}
-        /* SỬA MỚI: FIX sidebar collapse hoàn toàn - Không force width expanded, force width 0 khi collapsed, nhưng giữ nút toggle visible */
+        /* FIX: Cho phép toggle sidebar - Không force mở nữa, hiển thị nút <<< */
         section[data-testid="stSidebar"] {{
-            width: 300px; /* Không !important để Streamlit override khi collapsed */
-            min-width: 300px; /* Không !important */
-            max-width: 300px; /* Không !important */
+            width: 300px !important;
+            min-width: 300px !important;
+            max-width: 300px !important;
             background-color: var(--bg-color) !important;
             color: var(--text-color) !important;
-            transition: transform 0.2s ease-in-out, width 0.2s ease-in-out; /* Mượt mà width + transform */
-            z-index: 1; /* Giữ sidebar dưới main */
             /* Không force transform nữa, để Streamlit xử lý collapse */
         }}
-        /* Force sidebar ẩn hoàn toàn khi collapsed (target inline transform hoặc class) */
-        section[data-testid="stSidebar"][style*="translateX(-"] {{
-            width: 0 !important;
-            transform: translateX(-100%) !important;
-            overflow: hidden !important; /* Ẩn nội dung thừa */
-            margin-left: -300px !important; /* Backup pull left thêm */
-        }}
-        /* Backup target class collapsed (Streamlit thường dùng css-1d391kg hoặc tương tự cho collapsed) */
-        section[data-testid="stSidebar"].css-1d391kg, /* Thay .css-1d391kg bằng class thực tế nếu khác */
-        section[data-testid="stSidebar"][aria-expanded="false"] {{ /* Nếu có aria attr */
-            width: 0 !important;
-            transform: translateX(-100%) !important;
-            overflow: hidden !important;
-            margin-left: -300px !important;
-        }}
-        /* Đảm bảo main content adjust và không overlap */
-        .main {{
-            margin-left: 0 !important; /* Default 0 cho wide layout khi collapsed */
-            transition: margin-left 0.2s ease-in-out;
-        }}
-        /* Nếu sidebar expanded, main margin-left: 300px (backup nếu cần) */
-        section[data-testid="stSidebar"]:not([style*="translateX(-"]) ~ .main {{
-            margin-left: 300px !important;
-        }}
-        /* SỬA MỚI: Force nút toggle luôn visible, đặc biệt khi collapsed - Position fixed để không bị che */
-        [data-testid="collapsedControl"] {{
-            display: block !important;
-            z-index: 1001 !important; /* Cao hơn sidebar */
-            position: fixed !important; /* Fixed để luôn ở bên trái màn hình */
-            left: 0 !important;
-            top: 50% !important;
-            transform: translateY(-50%) !important;
-            background: var(--bg-color) !important;
-            color: var(--text-color) !important;
-            border: none !important;
-            border-radius: 0 10px 10px 0 !important; /* Bo góc phải */
-            padding: 10px !important;
-            cursor: pointer !important;
-            box-shadow: 2px 0 5px rgba(0,0,0,0.1) !important; /* Shadow để nổi bật */
-            width: auto !important; /* Không bị ảnh hưởng bởi width 0 */
-            height: auto !important;
-            margin: 0 !important;
-        }}
-        [data-testid="collapsedControl"] svg {{
-            fill: var(--text-color) !important;
-            width: 20px !important;
-            height: 20px !important;
-        }}
-        /* Ẩn nút toggle khi sidebar expanded (Streamlit tự handle, nhưng backup) */
-        section[data-testid="stSidebar"]:not([style*="translateX(-"]) [data-testid="collapsedControl"] {{
-            display: none !important; /* Ẩn <<< khi mở */
+        /* SỬA MỚI: Khi sidebar collapsed (có class 'sidebar-collapsed' trên body), làm nền transparent */
+        body.sidebar-collapsed section[data-testid="stSidebar"] {{
+            background: transparent !important;
+            backdrop-filter: blur(5px) !important; /* Giữ blur nhẹ để không hoàn toàn mất */
         }}
         /* SỬA: Cải thiện sidebar dark theme - Đảm bảo chữ trắng và elements con inherit đúng */
         section[data-testid="stSidebar"] {{
             color: var(--text-color) !important;
         }}
-        section[data-testid="stSidebar"] h1, section[data-testid="stSidebar"] h2, section[data-testid="stSidebar"] h3, 
+        section[data-testid="stSidebar"] h1, section[data-testid="stSidebar"] h2, section[data-testid="stSidebar"] h3,
         section[data-testid="stSidebar"] h4, section[data-testid="stSidebar"] h5, section[data-testid="stSidebar"] h6 {{
             color: var(--text-color) !important;
         }}
@@ -547,6 +496,10 @@ st.markdown(
         section[data-testid="stSidebar"] [data-testid="stRadio"] label * {{
             color: var(--text-color) !important;
         }}
+        /* Hiển thị nút toggle sidebar (<<<) để có thể thu gọn/mở rộng */
+        [data-testid="collapsedControl"] {{
+            display: block !important; /* Hiển thị nút collapse */
+        }}
         /* Media query cho mobile: Sidebar có thể slide, nhưng mở mặc định */
         @media (max-width: 768px) {{
             section[data-testid="stSidebar"] {{
@@ -560,12 +513,6 @@ st.markdown(
                 /* Không force translateX(0), để có thể slide khi toggle */
                 box-shadow: 2px 0 5px rgba(0,0,0,0.1) !important;
                 color: var(--text-color) !important; /* Áp dụng theme cho mobile sidebar */
-                /* SỬA: Khi collapsed trên mobile, slide out hoàn toàn */
-                [style*="translateX(-100%)"] {{
-                    transform: translateX(-100%) !important;
-                    width: 0 !important;
-                    overflow: hidden !important;
-                }}
             }}
             .main {{
                 margin-left: 0 !important;
@@ -574,14 +521,33 @@ st.markdown(
             /* Hiển thị toggle trên mobile */
             [data-testid="collapsedControl"] {{
                 display: block !important;
-                position: fixed !important;
-                left: 0 !important;
-                top: 10px !important; /* Góc trên trái cho mobile */
-                transform: none !important;
-                border-radius: 0 0 10px 0 !important;
+            }}
+            /* SỬA MỚI: Trên mobile, khi collapsed cũng transparent tương tự */
+            body.sidebar-collapsed section[data-testid="stSidebar"] {{
+                background: transparent !important;
+                backdrop-filter: blur(5px) !important;
             }}
         }}
     </style>
+    <script>
+        // JS để detect toggle sidebar và add/remove class 'sidebar-collapsed' trên body
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebarToggle = document.querySelector('[data-testid="collapsedControl"]');
+            if (sidebarToggle) {
+                sidebarToggle.addEventListener('click', function() {
+                    // Toggle class trên body dựa trên trạng thái sidebar (kiểm tra transform)
+                    const sidebar = document.querySelector('section[data-testid="stSidebar"]');
+                    if (sidebar && window.getComputedStyle(sidebar).transform.includes('-100%')) {
+                        // Collapsed: add class
+                        document.body.classList.add('sidebar-collapsed');
+                    } else {
+                        // Expanded: remove class
+                        document.body.classList.remove('sidebar-collapsed');
+                    }
+                });
+            }
+        });
+    </script>
     """,
     unsafe_allow_html=True
 )
@@ -613,7 +579,7 @@ if prompt := st.chat_input(t['chat_placeholder']):
     # Assistant đang trả lời...
     typing_placeholder = st.empty()
     typing_placeholder.markdown(
-        '<div class="typing"></div>',  # SỬA: Bỏ text hardcode, chỉ dùng CSS ::after để inject {t['typing']}
+        '<div class="typing"></div>', # SỬA: Bỏ text hardcode, chỉ dùng CSS ::after để inject {t['typing']}
         unsafe_allow_html=True
     )
     # Gọi API - Sử dụng model_name từ file text
