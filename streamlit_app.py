@@ -1,26 +1,29 @@
 import streamlit as st
 from openai import OpenAI
 from base64 import b64encode
-
-# Ẩn thanh công cụ và nút "Manage app"
-st.markdown(
-    """
-    <style>
-        /* Ẩn các nút Share, Star, Edit, GitHub */
-        [data-testid="stToolbar"] {
-            display: none !important;
-        }
-        [data-testid="stAppViewBlockContainer"] > div > div > div > div > div {
-            display: none !important;
-        }
-        /* Ẩn nút Manage app */
-        [data-testid="manage-app-button"] {
-            display: none !important;
-        }
-    </style>
-    """,
-    unsafe_allow_html=True
+st.set_page_config(
+    layout="wide",
+    initial_sidebar_state="expanded"
 )
+# Ẩn thanh công cụ và nút "Manage app"
+# st.markdown(
+#     """
+#     <style>
+#         /* Ẩn các nút Share, Star, Edit, GitHub */
+#         [data-testid="stToolbar"] {
+#             display: none !important;
+#         }
+#         [data-testid="stAppViewBlockContainer"] > div > div > div > div > div {
+#             display: none !important;
+#         }
+#         /* Ẩn nút Manage app */
+#         [data-testid="manage-app-button"] {
+#             display: none !important;
+#         }
+#     </style>
+#     """,
+#     unsafe_allow_html=True
+# )
 
 # Hàm đọc nội dung từ file văn bản
 def rfile(name_file):
