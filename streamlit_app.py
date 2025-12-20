@@ -68,6 +68,9 @@ if "theme" not in st.session_state:
 if "sidebar_open" not in st.session_state:
     st.session_state.sidebar_open = True  # Default: Mở sidebar
 
+# Lấy text theo ngôn ngữ hiện tại (FIX: Di chuyển lên trước để sử dụng cho button)
+t = translations[st.session_state.language]
+
 # Nút toggle sidebar ở đầu trang (trong main content)
 col1, col2 = st.columns([1, 10])  # Để nút ở góc phải
 with col1:
@@ -100,9 +103,6 @@ if st.session_state.sidebar_open:
         if selected_theme != st.session_state.theme:
             st.session_state.theme = selected_theme
             st.rerun()  # Refresh để áp dụng theme mới
-
-# Lấy text theo ngôn ngữ hiện tại
-t = translations[st.session_state.language]
 
 # CSS cho background với base64
 try:
