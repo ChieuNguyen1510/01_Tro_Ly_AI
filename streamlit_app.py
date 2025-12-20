@@ -120,7 +120,7 @@ try:
                 --input-bg: {'rgba(255, 255, 255, 0.1)' if st.session_state.theme == 'light' else 'rgba(0, 0, 0, 0.3)'};
                 --border-color: {'rgba(0, 0, 0, 0.2)' if st.session_state.theme == 'light' else 'rgba(255, 255, 255, 0.3)'};
                 --placeholder-color: {'rgba(0, 0, 0, 0.5)' if st.session_state.theme == 'light' else 'rgba(255, 255, 255, 0.7)'};
-                --input-inner-bg: {'rgba(255, 255, 255, 0.2)' if st.session_state.theme == 'light' else 'rgba(255, 255, 255, 0.1)'}; /* MỚI: Nền nhẹ bên trong input, phụ thuộc theme */
+                --input-inner-bg: {'rgba(255, 255, 255, 0.2)' if st.session_state.theme == 'light' else 'rgba(255, 255, 255, 0.1)'};
             }}
          
             /* Background đơn giản đã hoạt động - thêm transparent cho header và footer, fix crop top */
@@ -174,18 +174,39 @@ try:
                 box-shadow: none !important;
             }}
             [data-testid="stChatInput"] > div > div {{
-                background: var(--input-inner-bg) !important; /* SỬA: Thêm nền nhẹ bên trong viền */
+                background: var(--input-inner-bg) !important;
                 border: 1px solid var(--border-color) !important;
                 border-radius: 10px !important;
                 backdrop-filter: blur(5px) !important;
                 color: var(--text-color) !important;
                 padding: 8px 12px !important;
+                /* MỚI: Giữ nguyên style khi hover/focus */
+                transition: none !important; /* Loại bỏ transition để không thay đổi mượt */
+            }}
+            [data-testid="stChatInput"] > div > div:hover {{
+                background: var(--input-inner-bg) !important; /* Giữ nguyên nền khi hover */
+                border: 1px solid var(--border-color) !important; /* Giữ nguyên viền */
+                box-shadow: none !important;
+            }}
+            [data-testid="stChatInput"] > div > div:focus-within {{
+                background: var(--input-inner-bg) !important; /* Giữ nguyên nền khi focus */
+                border: 1px solid var(--border-color) !important; /* Giữ nguyên viền */
+                box-shadow: none !important; /* Loại bỏ shadow focus mặc định */
+                outline: none !important;
             }}
             [data-testid="stChatInput"] input {{
                 background: transparent !important;
                 border: none !important;
                 color: var(--text-color) !important;
                 outline: none !important;
+                /* MỚI: Giữ nguyên style khi focus/hover */
+            }}
+            [data-testid="stChatInput"] input:focus {{
+                background: transparent !important;
+                border: none !important;
+                color: var(--text-color) !important;
+                outline: none !important;
+                box-shadow: none !important;
             }}
             [data-testid="stChatInput"] input::placeholder {{
                 color: var(--placeholder-color) !important;
@@ -196,6 +217,13 @@ try:
                 box-shadow: none !important;
                 border: none !important;
                 color: var(--text-color) !important;
+                /* MỚI: Giữ nguyên khi focus/hover */
+                &:focus {{
+                    background: transparent !important;
+                    box-shadow: none !important;
+                    border: none !important;
+                    outline: none !important;
+                }}
             }}
         
             /* Nội dung chính */
