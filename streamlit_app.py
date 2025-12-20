@@ -172,7 +172,7 @@ try:
                 border: none !important;
                 color: var(--text-color) !important;
                 box-shadow: none !important;
-                box-sizing: border-box !important; /* SỬA: Thêm box-sizing để tránh layout shift */
+                box-sizing: border-box !important;
             }}
             [data-testid="stChatInput"] > div > div {{
                 background: var(--input-inner-bg) !important;
@@ -238,6 +238,18 @@ try:
                 margin: 0 !important; /* SỬA: Margin 0 */
                 vertical-align: middle !important; /* SỬA: Align giống text */
                 box-sizing: border-box !important;
+            }}
+            /* SỬA: Loại bỏ tất cả borders thừa ở nested elements */
+            [data-testid="stChatInput"] > div > div > div {{
+                border: none !important;
+                background: transparent !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                box-sizing: border-box !important;
+            }}
+            [data-testid="stChatInput"] > div > div > div > input {{
+                border: none !important;
+                background: transparent !important;
             }}
             /* Thêm: Force transparent cho tất cả child elements của chat input */
             [data-testid="stChatInput"] * {{
