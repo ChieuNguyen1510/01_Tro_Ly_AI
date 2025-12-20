@@ -59,7 +59,7 @@ translations = {
         'title': 'Chào mừng đến với Chatbot AI',
         'new_chat': 'Trò chuyện mới',
         'chat_placeholder': 'Nhập câu hỏi của bạn ở đây...',
-        'typing': 'Assistant đang soạn...',
+        'typing': 'Trợ lý đang soạn...',
         'assistant_fallback': 'Xin chào! Tôi là trợ lý AI của bạn. Hãy hỏi tôi bất cứ điều gì.',
     },
     'en': {
