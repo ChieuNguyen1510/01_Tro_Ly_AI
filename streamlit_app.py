@@ -275,12 +275,14 @@ st.markdown(
             content: "{t['typing']}" !important;
             animation: blink 1s infinite !important;
         }}
+        /* SỬA: Loại bỏ background cho stChatInput ở phần CSS này để tránh override */
         [data-testid="stChatInput"] {{
-            border: 2px solid #ddd !important;
+            background: transparent !important;
+            border: none !important;
             border-radius: 8px !important;
             padding: 8px !important;
-            background-color: var(--input-bg) !important;
             color: var(--text-color);
+            box-shadow: none !important;
         }}
         /* Tùy chỉnh nút "New chat" */
         div.stButton > button {{
