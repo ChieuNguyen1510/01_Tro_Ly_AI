@@ -190,7 +190,7 @@ try:
                 border-radius: 0 !important; /* SỬA: Bỏ border-radius để phẳng hơn */
                 backdrop-filter: blur(5px) !important;
                 color: var(--text-color) !important;
-                padding: 4px 8px !important; /* SỬA: Giảm padding để loại bỏ khoảng trống đầu/cuối */
+                padding: 0 !important; /* SỬA: Bỏ padding hoàn toàn để sát mép */
                 /* MỚI: Giữ nguyên style khi hover/focus */
                 transition: none !important; /* Loại bỏ transition để không thay đổi mượt */
                 min-height: 44px !important; /* SỬA: Tăng height fixed để consistent hơn */
@@ -199,7 +199,7 @@ try:
                 align-items: center !important;
                 box-sizing: border-box !important; /* SỬA: Box-sizing cho container */
                 /* SỬA: Loại bỏ padding/margin thừa để không tạo ô con */
-                gap: 4px !important; /* SỬA: Giảm gap giữa input và send button */
+                gap: 0 !important; /* SỬA: Bỏ gap giữa input và send button */
                 justify-content: space-between !important; /* SỬA: Input left, button right, loại bỏ khoảng trống thừa */
             }}
             [data-testid="stChatInput"] > div > div:hover {{
@@ -259,7 +259,7 @@ try:
                 background: transparent !important;
                 border: none !important;
                 box-shadow: none !important;
-                padding: 0 4px !important; /* Padding nhẹ cho icon */
+                padding: 0 !important; /* SỬA: Bỏ padding cho button để sát mép */
                 margin: 0 !important;
                 color: var(--text-color) !important;
                 border-radius: 0 !important; /* Loại bỏ border-radius thừa */
@@ -268,7 +268,7 @@ try:
                 justify-content: center !important;
                 width: auto !important;
                 height: 100% !important;
-                min-width: 24px !important; /* Kích thước icon nhỏ gọn */
+                min-width: 20px !important; /* SỬA: Giảm kích thước icon để sát hơn */
             }}
             [data-testid="stChatInput"] button:hover, [data-testid="stChatInput"] [role="button"]:hover {{
                 background: transparent !important; /* Không thay đổi khi hover */
@@ -277,6 +277,8 @@ try:
             [data-testid="stChatInput"] button svg, [data-testid="stChatInput"] [role="button"] svg {{
                 fill: var(--text-color) !important; /* Màu icon theo theme */
                 stroke: none !important;
+                width: 16px !important; /* SỬA: Giảm kích thước SVG để sát mép */
+                height: 16px !important;
             }}
             /* SỬA: Loại bỏ tất cả borders thừa ở nested elements */
             [data-testid="stChatInput"] > div > div > div {{
