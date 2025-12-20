@@ -53,19 +53,21 @@ def read_pdf(pdf_path):
 def img_to_base64(img_path):
     with open(img_path, "rb") as f:
         return b64encode(f.read()).decode()
-# MỚI: Dictionary dịch ngôn ngữ (dễ mở rộng)
+# MỚI: Dictionary dịch ngôn ngữ (dễ mở rộng) - Thêm fallback cho assistant
 translations = {
     'vi': {
         'title': 'Chào mừng đến với Chatbot AI',
         'new_chat': 'Trò chuyện mới',
         'chat_placeholder': 'Nhập câu hỏi của bạn ở đây...',
         'typing': 'Assistant đang soạn...',
+        'assistant_fallback': 'Xin chào! Tôi là trợ lý AI của bạn. Hãy hỏi tôi bất cứ điều gì.',
     },
     'en': {
         'title': 'Welcome to AI Chatbot',
         'new_chat': 'New chat',
         'chat_placeholder': 'Enter your question here...',
         'typing': 'Assistant is typing...',
+        'assistant_fallback': 'Hello! I am your AI assistant. Ask me anything.',
     }
 }
 # Chuyển ảnh sang base64
@@ -79,7 +81,6 @@ if "theme" not in st.session_state:
 # MỚI: Sidebar cho ngôn ngữ và theme (sẽ luôn mở nhờ page_config)
 with st.sidebar:
     st.header("Cài đặt / Settings")
- 
     # 1. Chọn ngôn ngữ
     selected_lang = st.selectbox(
         "Ngôn ngữ / Language",
@@ -90,7 +91,6 @@ with st.sidebar:
     if selected_lang != st.session_state.language:
         st.session_state.language = selected_lang
         st.rerun() # Refresh để áp dụng ngôn ngữ mới
- 
     # 2. Chọn theme
     selected_theme = st.radio(
         "Theme",
@@ -102,6 +102,9 @@ with st.sidebar:
         st.rerun() # Refresh để áp dụng theme mới
 # Lấy text theo ngôn ngữ hiện tại
 t = translations[st.session_state.language]
+# MỚI: Chọn file assistant dựa trên ngôn ngữ
+assistant_file = "02.assistant_VN.txt" if st.session_state.language == 'vi' else "02.assistant_EN.txt"
+assistant_content = rfile(assistant_file) # Đọc file động theo ngôn ngữ
 # MỚI: Chọn ảnh background dựa trên theme
 bg_file = "background_light.png" if st.session_state.theme == 'light' else "background_dark.png"
 # CSS cho background với base64 (cải tiến để cover thêm phần trên, loại bỏ margin/padding top)
@@ -122,7 +125,7 @@ try:
                 --placeholder-color: {'rgba(0, 0, 0, 0.5)' if st.session_state.theme == 'light' else 'rgba(255, 255, 255, 0.7)'};
                 --input-inner-bg: {'rgba(255, 255, 255, 0.2)' if st.session_state.theme == 'light' else 'rgba(255, 255, 255, 0.1)'};
             }}
-         
+        
             /* Background đơn giản đã hoạt động - thêm transparent cho header và footer, fix crop top */
             .stAppViewContainer {{
                 background-image: url('data:image/png;base64,{bg_image_base64}');
@@ -141,7 +144,7 @@ try:
                 background-color: var(--bg-color);
                 color: var(--text-color);
             }}
-        
+       
             /* Làm header transparent để thấy background, loại bỏ padding top */
             section[data-testid="stDecoration"] {{
                 background: transparent !important;
@@ -153,7 +156,7 @@ try:
                 padding-top: 0 !important;
                 margin-top: 0 !important;
             }}
-        
+       
             /* SỬA: Làm footer (chat input) transparent hoàn toàn, loại bỏ nền trắng - Target các selector sâu hơn */
             [data-testid="stBottom"] > div {{
                 background: transparent !important;
@@ -309,7 +312,7 @@ try:
                     margin: 0 !important;
                 }}
             }}
-        
+       
             /* Nội dung chính */
             .main .block-container {{
                 background-color: var(--card-bg) !important;
@@ -343,12 +346,12 @@ st.markdown(
 # OpenAI API
 openai_api_key = st.secrets.get("OPENAI_API_KEY")
 client = OpenAI(api_key=openai_api_key)
-# MỚI: System từ PDF (data), Assistant từ file text cũ, Model từ file text
+# MỚI: System từ PDF (data), Assistant từ file text động theo ngôn ngữ, Model từ file text
 pdf_data = read_pdf("data.pdf") # Chỉ dùng cho system prompt (data)
-assistant_content = rfile("02.assistant.txt") # Lời chào giữ nguyên
 model_name = rfile("module_chatgpt.txt").strip() or "gpt-4o-mini" # Model từ file hoặc fallback
 INITIAL_SYSTEM_MESSAGE = {"role": "system", "content": pdf_data} # System dùng PDF data
-INITIAL_ASSISTANT_MESSAGE = {"role": "assistant", "content": assistant_content or "Xin chào! Tôi là trợ lý AI của bạn. Hãy hỏi tôi bất cứ điều gì."} # Fallback nếu file không có
+# SỬA: Assistant content động theo ngôn ngữ, với fallback từ translations
+INITIAL_ASSISTANT_MESSAGE = {"role": "assistant", "content": assistant_content or t['assistant_fallback']}
 # Khởi tạo session_state.messages nếu chưa có
 if "messages" not in st.session_state:
     st.session_state.messages = [INITIAL_SYSTEM_MESSAGE, INITIAL_ASSISTANT_MESSAGE]
@@ -431,6 +434,63 @@ st.markdown(
             color: var(--text-color) !important;
             /* Không force transform nữa, để Streamlit xử lý collapse */
         }}
+        /* SỬA: Cải thiện sidebar dark theme - Đảm bảo chữ trắng và elements con inherit đúng */
+        section[data-testid="stSidebar"] {{
+            color: var(--text-color) !important;
+        }}
+        section[data-testid="stSidebar"] h1, section[data-testid="stSidebar"] h2, section[data-testid="stSidebar"] h3, 
+        section[data-testid="stSidebar"] h4, section[data-testid="stSidebar"] h5, section[data-testid="stSidebar"] h6 {{
+            color: var(--text-color) !important;
+        }}
+        section[data-testid="stSidebar"] label {{
+            color: var(--text-color) !important;
+        }}
+        section[data-testid="stSidebar"] select, section[data-testid="stSidebar"] input[type="radio"] {{
+            color: var(--text-color) !important;
+            background-color: var(--bg-color) !important;
+            border-color: var(--border-color) !important;
+        }}
+        section[data-testid="stSidebar"] select option {{
+            color: var(--text-color) !important;
+            background-color: var(--bg-color) !important;
+        }}
+        section[data-testid="stSidebar"] .stRadio > div > label {{
+            color: var(--text-color) !important;
+        }}
+        section[data-testid="stSidebar"] .stSelectbox > div > label {{
+            color: var(--text-color) !important;
+        }}
+        /* SỬA MỚI: Target sâu hơn cho radio options text (light/dark) - Đảm bảo chữ trắng ở dark theme */
+        section[data-testid="stSidebar"] .stRadio > label > div > div > span {{
+            color: var(--text-color) !important;
+        }}
+        section[data-testid="stSidebar"] [data-baseweb="radio"] {{
+            color: var(--text-color) !important;
+        }}
+        section[data-testid="stSidebar"] [data-baseweb="radio"] span {{
+            color: var(--text-color) !important;
+        }}
+        /* Áp dụng cho tất cả text elements trong radio */
+        section[data-testid="stSidebar"] div[data-testid="stRadio"] label span {{
+            color: var(--text-color) !important;
+        }}
+        /* SỬA THÊM: Target BaseWeb radio option content và label text cụ thể hơn */
+        section[data-testid="stSidebar"] [data-baseweb="radio-group"] label [role="radio"] span {{
+            color: var(--text-color) !important;
+        }}
+        section[data-testid="stSidebar"] .rc-option__content {{
+            color: var(--text-color) !important;
+        }}
+        section[data-testid="stSidebar"] .rc-option__content span {{
+            color: var(--text-color) !important;
+        }}
+        section[data-testid="stSidebar"] [data-baseweb="radio"] [role="radio"] {{
+            color: var(--text-color) !important;
+        }}
+        /* Force cho tất cả spans và divs con trong radio labels */
+        section[data-testid="stSidebar"] [data-testid="stRadio"] label * {{
+            color: var(--text-color) !important;
+        }}
         /* Hiển thị nút toggle sidebar (<<<) để có thể thu gọn/mở rộng */
         [data-testid="collapsedControl"] {{
             display: block !important; /* Hiển thị nút collapse */
@@ -447,6 +507,7 @@ st.markdown(
                 z-index: 999 !important;
                 /* Không force translateX(0), để có thể slide khi toggle */
                 box-shadow: 2px 0 5px rgba(0,0,0,0.1) !important;
+                color: var(--text-color) !important; /* Áp dụng theme cho mobile sidebar */
             }}
             .main {{
                 margin-left: 0 !important;
@@ -489,19 +550,23 @@ if prompt := st.chat_input(t['chat_placeholder']):
     # Assistant đang trả lời...
     typing_placeholder = st.empty()
     typing_placeholder.markdown(
-        '<div class="typing">Assistant is typing..</div>',
+        '<div class="typing"></div>',  # SỬA: Bỏ text hardcode, chỉ dùng CSS ::after để inject {t['typing']}
         unsafe_allow_html=True
     )
     # Gọi API - Sử dụng model_name từ file text
     response = ""
-    stream = client.chat.completions.create(
-        model=model_name,
-        messages=[{"role": m["role"], "content": m["content"]} for m in st.session_state.messages],
-        stream=True,
-    )
-    for chunk in stream:
-        if chunk.choices:
-            response += chunk.choices[0].delta.content or ""
+    try:
+        stream = client.chat.completions.create(
+            model=model_name,
+            messages=[{"role": m["role"], "content": m["content"]} for m in st.session_state.messages],
+            stream=True,
+        )
+        for chunk in stream:
+            if chunk.choices:
+                response += chunk.choices[0].delta.content or ""
+    except Exception as e:
+        response = f"Lỗi khi gọi API: {str(e)}. Vui lòng thử lại."
+        st.error(response)
     # Xóa dòng typing
     typing_placeholder.empty()
     # Hiển thị phản hồi
@@ -511,5 +576,4 @@ if prompt := st.chat_input(t['chat_placeholder']):
         <div class="text">{response}</div>
     </div>
     ''', unsafe_allow_html=True)
- 
     st.session_state.messages.append({"role": "assistant", "content": response})
