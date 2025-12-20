@@ -35,7 +35,7 @@ def img_to_base64(img_path):
 # MỚI: Dictionary dịch ngôn ngữ (dễ mở rộng)
 translations = {
     'vi': {
-        'title': 'Chào mừng đến với Chatbot AI', # Sử dụng rfile("00.xinchao.txt") nếu muốn từ file
+        'title': 'Chào mừng đến với Chatbot AI',  # Sử dụng rfile("00.xinchao.txt") nếu muốn từ file
         'new_chat': 'Bắt đầu cuộc trò chuyện mới',
         'chat_placeholder': 'Nhập câu hỏi của bạn ở đây...',
         'typing': 'Assistant đang gõ...',
@@ -54,39 +54,34 @@ user_icon = img_to_base64("user_icon.png")
 
 # MỚI: Khởi tạo session_state cho language và theme
 if "language" not in st.session_state:
-    st.session_state.language = 'vi' # Default: Tiếng Việt
+    st.session_state.language = 'vi'  # Default: Tiếng Việt
 if "theme" not in st.session_state:
-    st.session_state.theme = 'light' # Default: Light
+    st.session_state.theme = 'light'  # Default: Light
 
 # MỚI: Sidebar cho ngôn ngữ và theme
-@st.cache_data(ttl=0)  # Không cache, force re-render mỗi lần
-def render_sidebar():
-    with st.sidebar:
-        st.header("Cài đặt / Settings")
-       
-        # 1. Chọn ngôn ngữ
-        selected_lang = st.selectbox(
-            "Ngôn ngữ / Language",
-            options=['vi', 'en'],
-            index=0 if st.session_state.language == 'vi' else 1,
-            format_func=lambda x: 'Tiếng Việt' if x == 'vi' else 'English'
-        )
-        if selected_lang != st.session_state.language:
-            st.session_state.language = selected_lang
-            st.rerun() # Refresh để áp dụng ngôn ngữ mới
-       
-        # 2. Chọn theme
-        selected_theme = st.radio(
-            "Theme",
-            options=['light', 'dark'],
-            index=0 if st.session_state.theme == 'light' else 1
-        )
-        if selected_theme != st.session_state.theme:
-            st.session_state.theme = selected_theme
-            st.rerun() # Refresh để áp dụng theme mới
-
-# Gọi render_sidebar() ngay sau init session_state
-render_sidebar()
+with st.sidebar:
+    st.header("Cài đặt / Settings")
+    
+    # 1. Chọn ngôn ngữ
+    selected_lang = st.selectbox(
+        "Ngôn ngữ / Language",
+        options=['vi', 'en'],
+        index=0 if st.session_state.language == 'vi' else 1,
+        format_func=lambda x: 'Tiếng Việt' if x == 'vi' else 'English'
+    )
+    if selected_lang != st.session_state.language:
+        st.session_state.language = selected_lang
+        st.rerun()  # Refresh để áp dụng ngôn ngữ mới
+    
+    # 2. Chọn theme
+    selected_theme = st.radio(
+        "Theme",
+        options=['light', 'dark'],
+        index=0 if st.session_state.theme == 'light' else 1
+    )
+    if selected_theme != st.session_state.theme:
+        st.session_state.theme = selected_theme
+        st.rerun()  # Refresh để áp dụng theme mới
 
 # Lấy text theo ngôn ngữ hiện tại
 t = translations[st.session_state.language]
@@ -105,11 +100,9 @@ try:
                 --assistant-bg: {'#f0f7ff' if st.session_state.theme == 'light' else '#1e293b'};
                 --user-bg: {'#e6ffe6' if st.session_state.theme == 'light' else '#1e4a2e'};
                 --input-bg: {'#fafafa' if st.session_state.theme == 'light' else '#1f2937'};
-                --sidebar-bg: {'#f0f0f0' if st.session_state.theme == 'light' else '#1a1a1a'}; /* MỚI: Bg riêng cho sidebar */
             }}
-           
+            
             /* Background đơn giản đã hoạt động - thêm transparent cho header và footer, fix crop top */
-            /* FIX: Dùng 100% thay 100vw để tránh cover sidebar */
             .stAppViewContainer {{
                 background-image: url('data:image/png;base64,{bg_image_base64}');
                 background-size: cover;
@@ -117,51 +110,29 @@ try:
                 background-repeat: no-repeat;
                 background-attachment: fixed;
                 height: 100vh;
-                width: 100%; /* FIX: Không dùng 100vw để sidebar fit */
+                width: 100vw;
                 margin: 0;
                 padding: 0;
-                margin-top: 0 !important; /* FIX: Loại -10px để tránh lệch */
+                margin-top: -10px !important; /* Kéo lên để cover phần top bị mất */
                 color: var(--text-color);
-                position: relative; /* FIX: Để z-index hoạt động */
             }}
             body {{
                 background-color: var(--bg-color);
                 color: var(--text-color);
             }}
-          
-            /* FIX: Đảm bảo sidebar luôn visible, z-index cao */
-            section[data-testid="stSidebar"] {{
-                z-index: 9999 !important;
-                background-color: var(--sidebar-bg) !important;
-                backdrop-filter: blur(10px) !important;
-                border-right: 1px solid #ddd !important;
-                width: 250px !important; /* FIX: Force width nếu cần */
-                position: fixed !important;
-                top: 0 !important;
-                left: 0 !important;
-                height: 100vh !important;
-                overflow-y: auto !important;
-            }}
-            /* FIX: KHÔNG ẨN collapsedControl nữa - để người dùng có thể mở sidebar nếu bị collapse */
-            [data-testid="collapsedControl"] {{
-                display: block !important; /* Hiển thị nút toggle */
-                z-index: 10000 !important;
-                background-color: var(--sidebar-bg) !important;
-            }}
-          
+           
             /* Làm header transparent để thấy background, loại bỏ padding top */
             section[data-testid="stDecoration"] {{
                 background: transparent !important;
                 padding-top: 0 !important;
                 margin-top: 0 !important;
-                z-index: 1; /* Thấp hơn sidebar */
             }}
             [data-testid="stHeader"] {{
                 background: transparent !important;
                 padding-top: 0 !important;
                 margin-top: 0 !important;
             }}
-          
+           
             /* Làm footer (chat input) transparent background */
             [data-testid="stChatInput"] {{
                 background: transparent !important;
@@ -174,15 +145,14 @@ try:
                 backdrop-filter: blur(5px) !important;
                 color: var(--text-color);
             }}
-          
-            /* Nội dung chính - FIX: Margin left để nhường chỗ sidebar */
+           
+            /* Nội dung chính */
             .main .block-container {{
                 background-color: var(--card-bg) !important;
                 border-radius: 10px !important;
                 padding: 10px !important;
                 backdrop-filter: blur(5px) !important;
                 margin: 10px !important;
-                margin-left: 270px !important; /* FIX: Nhường 250px + 20px cho sidebar */
                 max-height: 80vh !important;
                 overflow-y: auto !important;
                 margin-top: 0 !important; /* Đảm bảo không margin top thêm */
@@ -204,7 +174,7 @@ except:
     pass
 
 # Hiển thị tiêu đề (MỚI: Sử dụng text từ translations, hoặc giữ rfile nếu file hỗ trợ đa ngôn ngữ)
-# title_content = rfile("00.xinchao.txt") # Giữ nếu file là tiếng Việt, hoặc tách file riêng
+# title_content = rfile("00.xinchao.txt")  # Giữ nếu file là tiếng Việt, hoặc tách file riêng
 st.markdown(
     f"""<h1 style="text-align: center; font-size: 24px; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px; color: var(--text-color);">{t['title']}</h1>""",
     unsafe_allow_html=True
@@ -278,7 +248,7 @@ st.markdown(
             100% {{ opacity: 1; }}
         }}
         .typing::after {{
-            content: "{t['typing']}" !important; /* MỚI: Text typing động */
+            content: "{t['typing']}" !important;  /* MỚI: Text typing động */
             animation: blink 1s infinite !important;
         }}
         [data-testid="stChatInput"] {{
@@ -341,7 +311,7 @@ if prompt := st.chat_input(t['chat_placeholder']):
     # Assistant đang trả lời...
     typing_placeholder = st.empty()
     typing_placeholder.markdown(
-        '<div class="typing">Assistant is typing..</div>', # Đã override bằng CSS động
+        '<div class="typing">Assistant is typing..</div>',  # Đã override bằng CSS động
         unsafe_allow_html=True
     )
     # Gọi API
@@ -363,5 +333,5 @@ if prompt := st.chat_input(t['chat_placeholder']):
         <div class="text">{response}</div>
     </div>
     ''', unsafe_allow_html=True)
-   
+    
     st.session_state.messages.append({"role": "assistant", "content": response})
