@@ -172,6 +172,7 @@ try:
                 border: none !important;
                 color: var(--text-color) !important;
                 box-shadow: none !important;
+                box-sizing: border-box !important; /* SỬA: Thêm box-sizing để tránh layout shift */
             }}
             [data-testid="stChatInput"] > div > div {{
                 background: var(--input-inner-bg) !important;
@@ -182,9 +183,11 @@ try:
                 padding: 8px 12px !important;
                 /* MỚI: Giữ nguyên style khi hover/focus */
                 transition: none !important; /* Loại bỏ transition để không thay đổi mượt */
-                min-height: 40px !important; /* SỬA: Fixed height để consistent khi có/không text */
+                min-height: 44px !important; /* SỬA: Tăng height fixed để consistent hơn */
+                height: 44px !important; /* SỬA: Fixed height tuyệt đối */
                 display: flex !important;
                 align-items: center !important;
+                box-sizing: border-box !important; /* SỬA: Box-sizing cho container */
             }}
             [data-testid="stChatInput"] > div > div:hover {{
                 background: var(--input-inner-bg) !important; /* Giữ nguyên nền khi hover */
@@ -206,8 +209,11 @@ try:
                 line-height: 1.4 !important; /* SỬA: Fixed line-height giống text */
                 font-family: inherit !important;
                 padding: 0 !important; /* SỬA: Padding 0 để không thay đổi layout */
+                margin: 0 !important; /* SỬA: Margin 0 để tránh shift */
                 height: 100% !important; /* SỬA: Full height để consistent */
+                box-sizing: border-box !important; /* SỬA: Box-sizing cho input */
                 /* MỚI: Giữ nguyên style khi focus/hover */
+                vertical-align: middle !important; /* SỬA: Align để consistent với placeholder */
             }}
             [data-testid="stChatInput"] input:focus {{
                 background: transparent !important;
@@ -215,6 +221,13 @@ try:
                 color: var(--text-color) !important;
                 outline: none !important;
                 box-shadow: none !important;
+                margin: 0 !important; /* Giữ margin 0 khi focus */
+            }}
+            [data-testid="stChatInput"] input:valid {{
+                /* SỬA: Khi có text (valid), force style giống placeholder state */
+                padding: 0 !important;
+                margin: 0 !important;
+                height: 100% !important;
             }}
             [data-testid="stChatInput"] input::placeholder {{
                 color: var(--placeholder-color) !important;
@@ -222,6 +235,9 @@ try:
                 line-height: 1.4 !important; /* SỬA: Giống text */
                 font-family: inherit !important;
                 padding: 0 !important; /* SỬA: Padding 0 để layout giống */
+                margin: 0 !important; /* SỬA: Margin 0 */
+                vertical-align: middle !important; /* SỬA: Align giống text */
+                box-sizing: border-box !important;
             }}
             /* Thêm: Force transparent cho tất cả child elements của chat input */
             [data-testid="stChatInput"] * {{
@@ -229,12 +245,15 @@ try:
                 box-shadow: none !important;
                 border: none !important;
                 color: var(--text-color) !important;
+                box-sizing: border-box !important; /* SỬA: Áp dụng box-sizing toàn bộ */
+                margin: 0 !important; /* SỬA: Margin 0 để tránh shift */
                 /* MỚI: Giữ nguyên khi focus/hover */
                 &:focus {{
                     background: transparent !important;
                     box-shadow: none !important;
                     border: none !important;
                     outline: none !important;
+                    margin: 0 !important;
                 }}
             }}
         
