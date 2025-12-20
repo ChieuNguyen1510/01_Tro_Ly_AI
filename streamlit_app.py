@@ -32,13 +32,13 @@ def img_to_base64(img_path):
     with open(img_path, "rb") as f:
         return b64encode(f.read()).decode()
 
-# MỚI: Dictionary dịch ngôn ngữ (dễ mở rộng)
+# Dictionary dịch ngôn ngữ (dễ mở rộng)
 translations = {
     'vi': {
         'title': 'Chào mừng đến với Chatbot AI',  # Sử dụng rfile("00.xinchao.txt") nếu muốn từ file
-        'new_chat': 'Trò chuyện mới',
+        'new_chat': 'Bắt đầu cuộc trò chuyện mới',
         'chat_placeholder': 'Nhập câu hỏi của bạn ở đây...',
-        'typing': 'Assistant đang soạn...',
+        'typing': 'Assistant đang gõ...',
     },
     'en': {
         'title': 'Welcome to AI Chatbot',
@@ -52,36 +52,51 @@ translations = {
 assistant_icon = img_to_base64("assistant_icon.png")
 user_icon = img_to_base64("user_icon.png")
 
-# MỚI: Khởi tạo session_state cho language và theme
+# Khởi tạo session_state cho language, theme, và sidebar_open
 if "language" not in st.session_state:
     st.session_state.language = 'vi'  # Default: Tiếng Việt
 if "theme" not in st.session_state:
     st.session_state.theme = 'light'  # Default: Light
+if "sidebar_open" not in st.session_state:
+    st.session_state.sidebar_open = True
 
-# MỚI: Sidebar cho ngôn ngữ và theme
-with st.sidebar:
-    st.header("Cài đặt / Settings")
-    
-    # 1. Chọn ngôn ngữ
-    selected_lang = st.selectbox(
-        "Ngôn ngữ / Language",
-        options=['vi', 'en'],
-        index=0 if st.session_state.language == 'vi' else 1,
-        format_func=lambda x: 'Tiếng Việt' if x == 'vi' else 'English'
-    )
-    if selected_lang != st.session_state.language:
-        st.session_state.language = selected_lang
-        st.rerun()  # Refresh để áp dụng ngôn ngữ mới
-    
-    # 2. Chọn theme
-    selected_theme = st.radio(
-        "Theme",
-        options=['light', 'dark'],
-        index=0 if st.session_state.theme == 'light' else 1
-    )
-    if selected_theme != st.session_state.theme:
-        st.session_state.theme = selected_theme
-        st.rerun()  # Refresh để áp dụng theme mới
+# Sidebar với tùy chọn toggle
+if st.session_state.sidebar_open:
+    with st.sidebar:
+        st.header("Cài đặt / Settings")
+        
+        # Checkbox để toggle sidebar (ẩn/hiện)
+        if st.checkbox("Ẩn sidebar / Hide sidebar", key="toggle_sidebar"):
+            st.session_state.sidebar_open = False
+            st.rerun()
+        
+        # 1. Chọn ngôn ngữ
+        selected_lang = st.selectbox(
+            "Ngôn ngữ / Language",
+            options=['vi', 'en'],
+            index=0 if st.session_state.language == 'vi' else 1,
+            format_func=lambda x: 'Tiếng Việt' if x == 'vi' else 'English'
+        )
+        if selected_lang != st.session_state.language:
+            st.session_state.language = selected_lang
+            st.rerun()
+        
+        # 2. Chọn theme
+        selected_theme = st.radio(
+            "Theme",
+            options=['light', 'dark'],
+            index=0 if st.session_state.theme == 'light' else 1
+        )
+        if selected_theme != st.session_state.theme:
+            st.session_state.theme = selected_theme
+            st.rerun()
+
+# Nếu sidebar ẩn, hiển thị nút mở ở main area
+if not st.session_state.sidebar_open:
+    st.warning("Sidebar đang ẩn. Click nút bên dưới để mở cài đặt.")
+    if st.button("🔧 Mở sidebar cài đặt"):
+        st.session_state.sidebar_open = True
+        st.rerun()
 
 # Lấy text theo ngôn ngữ hiện tại
 t = translations[st.session_state.language]
@@ -92,7 +107,7 @@ try:
     st.markdown(
         f"""
         <style>
-            /* MỚI: CSS theme động dựa trên session_state */
+            /* CSS theme động dựa trên session_state */
             :root {{
                 --bg-color: {'#ffffff' if st.session_state.theme == 'light' else '#0e1117'};
                 --text-color: {'#000000' if st.session_state.theme == 'light' else '#ffffff'};
@@ -173,8 +188,7 @@ try:
 except:
     pass
 
-# Hiển thị tiêu đề (MỚI: Sử dụng text từ translations, hoặc giữ rfile nếu file hỗ trợ đa ngôn ngữ)
-# title_content = rfile("00.xinchao.txt")  # Giữ nếu file là tiếng Việt, hoặc tách file riêng
+# Hiển thị tiêu đề (Sử dụng text từ translations)
 st.markdown(
     f"""<h1 style="text-align: center; font-size: 24px; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px; color: var(--text-color);">{t['title']}</h1>""",
     unsafe_allow_html=True
@@ -184,7 +198,7 @@ st.markdown(
 openai_api_key = st.secrets.get("OPENAI_API_KEY")
 client = OpenAI(api_key=openai_api_key)
 
-# Tin nhắn hệ thống (MỚI: Có thể dịch system prompt nếu cần, nhưng giữ nguyên vì là training)
+# Tin nhắn hệ thống
 INITIAL_SYSTEM_MESSAGE = {"role": "system", "content": rfile("01.system_trainning.txt")}
 INITIAL_ASSISTANT_MESSAGE = {"role": "assistant", "content": rfile("02.assistant.txt")}
 
@@ -192,14 +206,14 @@ INITIAL_ASSISTANT_MESSAGE = {"role": "assistant", "content": rfile("02.assistant
 if "messages" not in st.session_state:
     st.session_state.messages = [INITIAL_SYSTEM_MESSAGE, INITIAL_ASSISTANT_MESSAGE]
 
-# Nút "Bắt đầu cuộc trò chuyện mới" (MỚI: Text động)
+# Nút "Bắt đầu cuộc trò chuyện mới" (Text động)
 if st.button(t['new_chat']):
     # Reset messages về trạng thái ban đầu
     st.session_state.messages = [INITIAL_SYSTEM_MESSAGE, INITIAL_ASSISTANT_MESSAGE]
     # Làm mới giao diện bằng cách rerun ứng dụng
     st.rerun()
 
-# CSS cải tiến (MỚI: Áp dụng theme cho messages và buttons)
+# CSS cải tiến (Áp dụng theme cho messages và buttons)
 st.markdown(
     f"""
     <style>
@@ -248,7 +262,7 @@ st.markdown(
             100% {{ opacity: 1; }}
         }}
         .typing::after {{
-            content: "{t['typing']}" !important;  /* MỚI: Text typing động */
+            content: "{t['typing']}" !important;  /* Text typing động */
             animation: blink 1s infinite !important;
         }}
         [data-testid="stChatInput"] {{
@@ -272,7 +286,7 @@ st.markdown(
         div.stButton > button:hover {{
             background-color: #45a049 !important;
         }}
-        /* MỚI: Sidebar style cho theme */
+        /* Sidebar style cho theme */
         .css-1d391kg {{
             background-color: var(--bg-color) !important;
             color: var(--text-color);
@@ -299,7 +313,7 @@ for message in st.session_state.messages:
         </div>
         ''', unsafe_allow_html=True)
 
-# Ô nhập câu hỏi (MỚI: Placeholder động theo ngôn ngữ)
+# Ô nhập câu hỏi (Placeholder động theo ngôn ngữ)
 if prompt := st.chat_input(t['chat_placeholder']):
     st.session_state.messages.append({"role": "user", "content": prompt})
     st.markdown(f'''
@@ -311,7 +325,7 @@ if prompt := st.chat_input(t['chat_placeholder']):
     # Assistant đang trả lời...
     typing_placeholder = st.empty()
     typing_placeholder.markdown(
-        '<div class="typing">Assistant is typing..</div>',  # Đã override bằng CSS động
+        '<div class="typing"></div>',  # Sử dụng CSS để thêm text động
         unsafe_allow_html=True
     )
     # Gọi API
