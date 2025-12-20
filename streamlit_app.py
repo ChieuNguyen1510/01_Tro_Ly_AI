@@ -118,6 +118,7 @@ try:
                 --assistant-bg: {'#f0f7ff' if st.session_state.theme == 'light' else '#1e293b'};
                 --user-bg: {'#e6ffe6' if st.session_state.theme == 'light' else '#1e4a2e'};
                 --input-bg: {'rgba(255, 255, 255, 0.1)' if st.session_state.theme == 'light' else 'rgba(0, 0, 0, 0.3)'};
+                --border-color: {'rgba(0, 0, 0, 0.2)' if st.session_state.theme == 'light' else 'rgba(255, 255, 255, 0.3)'}; /* MỚI: Màu viền phụ thuộc theme */
             }}
          
             /* Background đơn giản đã hoạt động - thêm transparent cho header và footer, fix crop top */
@@ -172,7 +173,7 @@ try:
             }}
             [data-testid="stChatInput"] > div > div {{
                 background: transparent !important;
-                border: none !important; /* SỬA: Bỏ border trắng hoàn toàn */
+                border: 1px solid var(--border-color) !important; /* MỚI: Thêm viền với màu phụ thuộc theme */
                 border-radius: 10px !important;
                 backdrop-filter: blur(5px) !important;
                 color: var(--text-color);
@@ -191,7 +192,7 @@ try:
             [data-testid="stChatInput"] * {{
                 background: transparent !important;
                 box-shadow: none !important;
-                border: none !important; /* SỬA: Bỏ border cho tất cả sub-elements */
+                border: none !important;
             }}
         
             /* Nội dung chính */
