@@ -119,7 +119,8 @@ try:
                 --user-bg: {'#e6ffe6' if st.session_state.theme == 'light' else '#1e4a2e'};
                 --input-bg: {'rgba(255, 255, 255, 0.1)' if st.session_state.theme == 'light' else 'rgba(0, 0, 0, 0.3)'};
                 --border-color: {'rgba(0, 0, 0, 0.2)' if st.session_state.theme == 'light' else 'rgba(255, 255, 255, 0.3)'};
-                --placeholder-color: {'rgba(0, 0, 0, 0.5)' if st.session_state.theme == 'light' else 'rgba(255, 255, 255, 0.7)'}; /* MỚI: Màu placeholder phụ thuộc theme */
+                --placeholder-color: {'rgba(0, 0, 0, 0.5)' if st.session_state.theme == 'light' else 'rgba(255, 255, 255, 0.7)'};
+                --input-inner-bg: {'rgba(255, 255, 255, 0.2)' if st.session_state.theme == 'light' else 'rgba(255, 255, 255, 0.1)'}; /* MỚI: Nền nhẹ bên trong input, phụ thuộc theme */
             }}
          
             /* Background đơn giản đã hoạt động - thêm transparent cho header và footer, fix crop top */
@@ -169,32 +170,32 @@ try:
             [data-testid="stChatInput"] {{
                 background: transparent !important;
                 border: none !important;
-                color: var(--text-color) !important; /* SỬA: Force text color theo theme */
+                color: var(--text-color) !important;
                 box-shadow: none !important;
             }}
             [data-testid="stChatInput"] > div > div {{
-                background: transparent !important;
+                background: var(--input-inner-bg) !important; /* SỬA: Thêm nền nhẹ bên trong viền */
                 border: 1px solid var(--border-color) !important;
                 border-radius: 10px !important;
                 backdrop-filter: blur(5px) !important;
-                color: var(--text-color) !important; /* SỬA: Force text color theo theme */
+                color: var(--text-color) !important;
                 padding: 8px 12px !important;
             }}
             [data-testid="stChatInput"] input {{
                 background: transparent !important;
                 border: none !important;
-                color: var(--text-color) !important; /* SỬA: Force text color theo theme */
+                color: var(--text-color) !important;
                 outline: none !important;
             }}
             [data-testid="stChatInput"] input::placeholder {{
-                color: var(--placeholder-color) !important; /* SỬA: Placeholder color theo theme */
+                color: var(--placeholder-color) !important;
             }}
             /* Thêm: Force transparent cho tất cả child elements của chat input */
             [data-testid="stChatInput"] * {{
                 background: transparent !important;
                 box-shadow: none !important;
                 border: none !important;
-                color: var(--text-color) !important; /* SỬA: Force color cho tất cả sub-elements */
+                color: var(--text-color) !important;
             }}
         
             /* Nội dung chính */
