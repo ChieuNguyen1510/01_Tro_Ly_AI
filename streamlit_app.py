@@ -1,6 +1,13 @@
 import streamlit as st
 from openai import OpenAI
 from base64 import b64encode
+
+# MỚI: Set page config để wide layout, giúp sidebar có chỗ hơn và luôn mở
+st.set_page_config(
+    layout="wide",
+    initial_sidebar_state="expanded"  # Default: Luôn mở sidebar khi load
+)
+
 # Ẩn thanh công cụ và nút "Manage app"
 st.markdown(
     """
@@ -20,18 +27,21 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
+
 # Hàm đọc nội dung từ file văn bản
 def rfile(name_file):
     with open(name_file, "r", encoding="utf-8") as file:
         return file.read()
+
 # Hàm chuyển ảnh thành base64
 def img_to_base64(img_path):
     with open(img_path, "rb") as f:
         return b64encode(f.read()).decode()
+
 # MỚI: Dictionary dịch ngôn ngữ (dễ mở rộng)
 translations = {
     'vi': {
-        'title': 'Chào mừng đến với Chatbot AI', # Sử dụng rfile("00.xinchao.txt") nếu muốn từ file
+        'title': 'Chào mừng đến với Chatbot AI',
         'new_chat': 'Bắt đầu cuộc trò chuyện mới',
         'chat_placeholder': 'Nhập câu hỏi của bạn ở đây...',
         'typing': 'Assistant đang gõ...',
@@ -43,15 +53,18 @@ translations = {
         'typing': 'Assistant is typing...',
     }
 }
+
 # Chuyển ảnh sang base64
 assistant_icon = img_to_base64("assistant_icon.png")
 user_icon = img_to_base64("user_icon.png")
+
 # MỚI: Khởi tạo session_state cho language và theme
 if "language" not in st.session_state:
-    st.session_state.language = 'vi' # Default: Tiếng Việt
+    st.session_state.language = 'vi'  # Default: Tiếng Việt
 if "theme" not in st.session_state:
-    st.session_state.theme = 'light' # Default: Light
-# MỚI: Sidebar cho ngôn ngữ và theme
+    st.session_state.theme = 'light'  # Default: Light
+
+# MỚI: Sidebar cho ngôn ngữ và theme (sẽ luôn mở nhờ page_config)
 with st.sidebar:
     st.header("Cài đặt / Settings")
    
@@ -64,7 +77,7 @@ with st.sidebar:
     )
     if selected_lang != st.session_state.language:
         st.session_state.language = selected_lang
-        st.rerun() # Refresh để áp dụng ngôn ngữ mới
+        st.rerun()  # Refresh để áp dụng ngôn ngữ mới
    
     # 2. Chọn theme
     selected_theme = st.radio(
@@ -74,9 +87,11 @@ with st.sidebar:
     )
     if selected_theme != st.session_state.theme:
         st.session_state.theme = selected_theme
-        st.rerun() # Refresh để áp dụng theme mới
+        st.rerun()  # Refresh để áp dụng theme mới
+
 # Lấy text theo ngôn ngữ hiện tại
 t = translations[st.session_state.language]
+
 # CSS cho background với base64 (cải tiến để cover thêm phần trên, loại bỏ margin/padding top)
 try:
     bg_image_base64 = img_to_base64("background.png")
@@ -97,14 +112,14 @@ try:
             .stAppViewContainer {{
                 background-image: url('data:image/png;base64,{bg_image_base64}');
                 background-size: cover;
-                background-position: center top; /* Căn giữa theo top để tránh crop trên */
+                background-position: center top;
                 background-repeat: no-repeat;
                 background-attachment: fixed;
                 height: 100vh;
                 width: 100vw;
                 margin: 0;
                 padding: 0;
-                margin-top: -10px !important; /* Kéo lên để cover phần top bị mất */
+                margin-top: -10px !important;
                 color: var(--text-color);
             }}
             body {{
@@ -146,7 +161,7 @@ try:
                 margin: 10px !important;
                 max-height: 80vh !important;
                 overflow-y: auto !important;
-                margin-top: 0 !important; /* Đảm bảo không margin top thêm */
+                margin-top: 0 !important;
                 color: var(--text-color);
             }}
         </style>
@@ -155,6 +170,7 @@ try:
     )
 except FileNotFoundError:
     st.warning("File background.png không tìm thấy. Vui lòng đặt file vào thư mục app.")
+
 # Hiển thị logo (nếu có)
 try:
     col1, col2, col3 = st.columns([1, 2, 1])
@@ -162,28 +178,31 @@ try:
         st.image("logo.png", use_container_width=True)
 except:
     pass
-# Hiển thị tiêu đề (MỚI: Sử dụng text từ translations, hoặc giữ rfile nếu file hỗ trợ đa ngôn ngữ)
-# title_content = rfile("00.xinchao.txt") # Giữ nếu file là tiếng Việt, hoặc tách file riêng
+
+# Hiển thị tiêu đề
 st.markdown(
     f"""<h1 style="text-align: center; font-size: 24px; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px; color: var(--text-color);">{t['title']}</h1>""",
     unsafe_allow_html=True
 )
+
 # OpenAI API
 openai_api_key = st.secrets.get("OPENAI_API_KEY")
 client = OpenAI(api_key=openai_api_key)
-# Tin nhắn hệ thống (MỚI: Có thể dịch system prompt nếu cần, nhưng giữ nguyên vì là training)
+
+# Tin nhắn hệ thống
 INITIAL_SYSTEM_MESSAGE = {"role": "system", "content": rfile("01.system_trainning.txt")}
 INITIAL_ASSISTANT_MESSAGE = {"role": "assistant", "content": rfile("02.assistant.txt")}
+
 # Khởi tạo session_state.messages nếu chưa có
 if "messages" not in st.session_state:
     st.session_state.messages = [INITIAL_SYSTEM_MESSAGE, INITIAL_ASSISTANT_MESSAGE]
-# Nút "Bắt đầu cuộc trò chuyện mới" (MỚI: Text động)
+
+# Nút "Bắt đầu cuộc trò chuyện mới"
 if st.button(t['new_chat']):
-    # Reset messages về trạng thái ban đầu
     st.session_state.messages = [INITIAL_SYSTEM_MESSAGE, INITIAL_ASSISTANT_MESSAGE]
-    # Làm mới giao diện bằng cách rerun ứng dụng
     st.rerun()
-# CSS cải tiến (MỚI: Áp dụng theme cho messages và buttons)
+
+# CSS cải tiến (FIX: Sidebar luôn mở)
 st.markdown(
     f"""
     <style>
@@ -232,7 +251,7 @@ st.markdown(
             100% {{ opacity: 1; }}
         }}
         .typing::after {{
-            content: "{t['typing']}" !important; /* MỚI: Text typing động */
+            content: "{t['typing']}" !important;
             animation: blink 1s infinite !important;
         }}
         [data-testid="stChatInput"] {{
@@ -251,26 +270,33 @@ st.markdown(
             font-size: 14px !important;
             border: none !important;
             display: block !important;
-            margin: 10px 0px !important; /* Căn giữa nút */
+            margin: 10px 0px !important;
         }}
         div.stButton > button:hover {{
             background-color: #45a049 !important;
         }}
-        /* MỚI: Sidebar style cho theme - FIX: Luôn mở sidebar */
-        .css-1d391kg {{
-            background-color: var(--bg-color) !important;
-            color: var(--text-color);
-            width: 250px !important;
-            min-width: 250px !important;
-            max-width: 250px !important;
+        /* FIX: Sidebar luôn mở - Force expanded state */
+        section[data-testid="stSidebar"] {{
+            width: 300px !important;
+            min-width: 300px !important;
+            max-width: 300px !important;
             display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            transform: translateX(0) !important;
             position: relative !important;
             z-index: 10 !important;
             overflow: visible !important;
+            background-color: var(--bg-color) !important;
+            color: var(--text-color) !important;
         }}
-        /* Đảm bảo sidebar không bị collapse trên mobile/narrow view */
+        /* Button toggle sidebar (ẩn nếu không cần) - Streamlit default toggle */
+        [data-testid="collapsedControl"] {{
+            display: none !important;  /* Ẩn nút collapse để force luôn mở */
+        }}
+        /* Media query cho mobile: Force sidebar full-width và luôn hiện */
         @media (max-width: 768px) {{
-            .css-1d391kg {{
+            section[data-testid="stSidebar"] {{
                 width: 100% !important;
                 min-width: unset !important;
                 position: fixed !important;
@@ -278,16 +304,23 @@ st.markdown(
                 left: 0 !important;
                 height: 100vh !important;
                 z-index: 999 !important;
-                transform: translateX(0) !important; /* Luôn mở, không slide */
+                transform: translateX(0) !important;  /* Không slide nữa */
+                box-shadow: 2px 0 5px rgba(0,0,0,0.1) !important;
             }}
             .main {{
-                margin-left: 0 !important; /* Adjust main content nếu cần */
+                margin-left: 0 !important;
+                padding-left: 0 !important;
+            }}
+            /* Ẩn toggle trên mobile */
+            [data-testid="collapsedControl"] {{
+                display: none !important;
             }}
         }}
     </style>
     """,
     unsafe_allow_html=True
 )
+
 # Hiển thị lịch sử tin nhắn (trừ system)
 for message in st.session_state.messages:
     if message["role"] == "assistant":
@@ -304,7 +337,8 @@ for message in st.session_state.messages:
             <div class="text">{message["content"]}</div>
         </div>
         ''', unsafe_allow_html=True)
-# Ô nhập câu hỏi (MỚI: Placeholder động theo ngôn ngữ)
+
+# Ô nhập câu hỏi
 if prompt := st.chat_input(t['chat_placeholder']):
     st.session_state.messages.append({"role": "user", "content": prompt})
     st.markdown(f'''
@@ -316,7 +350,7 @@ if prompt := st.chat_input(t['chat_placeholder']):
     # Assistant đang trả lời...
     typing_placeholder = st.empty()
     typing_placeholder.markdown(
-        '<div class="typing">Assistant is typing..</div>', # Đã override bằng CSS động
+        '<div class="typing">Assistant is typing..</div>',
         unsafe_allow_html=True
     )
     # Gọi API
@@ -329,9 +363,9 @@ if prompt := st.chat_input(t['chat_placeholder']):
     for chunk in stream:
         if chunk.choices:
             response += chunk.choices[0].delta.content or ""
-    # Xóa dòng "Assistant is typing..."
+    # Xóa dòng typing
     typing_placeholder.empty()
-    # Hiển thị phản hồi từ assistant
+    # Hiển thị phản hồi
     st.markdown(f'''
     <div class="message assistant">
         <img src="data:image/png;base64,{assistant_icon}" class="icon" />
