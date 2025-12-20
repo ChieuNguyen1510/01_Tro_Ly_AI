@@ -79,6 +79,21 @@ with st.sidebar:
         st.rerun() # Refresh để áp dụng theme mới
 # Lấy text theo ngôn ngữ hiện tại
 t = translations[st.session_state.language]
+# TÍNH TOÁN CSS VARIABLES TRƯỚC ĐỂ TRÁNH LỖI F-STRING
+if st.session_state.theme == 'light':
+    bg_color = '#ffffff'
+    text_color = '#000000'
+    card_bg = 'rgba(255, 255, 255, 0.9)'
+    assistant_bg = '#f0f7ff'
+    user_bg = '#e6ffe6'
+    input_bg = '#fafafa'
+else:
+    bg_color = '#0e1117'
+    text_color = '#ffffff'
+    card_bg = 'rgba(0, 0, 0, 0.8)'
+    assistant_bg = '#1e293b'
+    user_bg = '#1e4a2e'
+    input_bg = '#1f2937'
 # CSS cho background với base64 (cải tiến để cover thêm phần trên, loại bỏ margin/padding top)
 try:
     bg_image_base64 = img_to_base64("background.png")
@@ -87,12 +102,12 @@ try:
         <style>
             /* MỚI: CSS theme động dựa trên session_state */
             :root {{
-                --bg-color: {'#ffffff' if st.session_state.theme == 'light' else '#0e1117'};
-                --text-color: {'#000000' if st.session_state.theme == 'light' else '#ffffff'};
-                --card-bg: {'rgba(255, 255, 255, 0.9)' if st.session_state.theme == 'light' else 'rgba(0, 0, 0, 0.8)'};
-                --assistant-bg: {'#f0f7ff' if st.session_state.theme == 'light' else '#1e293b'};
-                --user-bg: {'#e6ffe6' if st.session_state.theme == 'light' else '#1e4a2e'};
-                --input-bg: {'#fafafa' if st.session_state.theme == 'light' else '#1f2937'};
+                --bg-color: {bg_color};
+                --text-color: {text_color};
+                --card-bg: {card_bg};
+                --assistant-bg: {assistant_bg};
+                --user-bg: {user_bg};
+                --input-bg: {input_bg};
             }}
            
             /* Background đơn giản đã hoạt động - thêm transparent cho header và footer, fix crop top */
@@ -167,7 +182,7 @@ except:
 # Hiển thị tiêu đề (MỚI: Sử dụng text từ translations, hoặc giữ rfile nếu file hỗ trợ đa ngôn ngữ)
 # title_content = rfile("00.xinchao.txt") # Giữ nếu file là tiếng Việt, hoặc tách file riêng
 st.markdown(
-    f"""<h1 style="text-align: center; font-size: 24px; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px; color: var(--text-color);">{t['title']}</h1>""",
+    f'<h1 style="text-align: center; font-size: 24px; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px; color: {text_color};">{t["title"]}</h1>',
     unsafe_allow_html=True
 )
 # THÊM: Nút toggle sidebar thủ công trong main area (nếu sidebar bị ẩn)
@@ -199,110 +214,109 @@ if st.button(t['new_chat']):
     st.session_state.messages = [INITIAL_SYSTEM_MESSAGE, INITIAL_ASSISTANT_MESSAGE]
     # Làm mới giao diện bằng cách rerun ứng dụng
     st.rerun()
-# CSS cải tiến (MỚI: Áp dụng theme cho messages và buttons)
-st.markdown(
-    f"""
-    <style>
-        .message {{
-            padding: 12px !important;
-            border-radius: 12px !important;
-            max-width: 75% !important;
-            display: flex !important;
-            align-items: flex-start !important;
-            gap: 12px !important;
-            margin: 8px 0 !important;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
-            color: var(--text-color);
-        }}
-        .assistant {{
-            background-color: var(--assistant-bg) !important;
-        }}
-        .user {{
-            background-color: var(--user-bg) !important;
-            text-align: right !important;
-            margin-left: auto !important;
-            flex-direction: row-reverse !important;
-        }}
-        .icon {{
-            width: 32px !important;
-            height: 32px !important;
-            border-radius: 50% !important;
-            border: 1px solid #ddd !important;
-        }}
-        .text {{
-            flex: 1 !important;
-            font-size: 16px !important;
-            line-height: 1.4 !important;
-            color: var(--text-color);
-        }}
-        .typing {{
-            font-style: italic !important;
-            color: #888 !important;
-            padding: 5px 10px !important;
-            display: flex !important;
-            align-items: center !important;
-        }}
-        @keyframes blink {{
-            0% {{ opacity: 1; }}
-            50% {{ opacity: 0.5; }}
-            100% {{ opacity: 1; }}
-        }}
-        .typing::after {{
-            content: "{t['typing']}" !important; /* MỚI: Text typing động */
-            animation: blink 1s infinite !important;
-        }}
-        [data-testid="stChatInput"] {{
-            border: 2px solid #ddd !important;
-            border-radius: 8px !important;
-            padding: 8px !important;
-            background-color: var(--input-bg) !important;
-            color: var(--text-color);
-        }}
-        /* Tùy chỉnh nút "New chat" */
-        div.stButton > button {{
-            background-color: #4CAF50 !important;
-            color: white !important;
-            border-radius: 2px solid #FFFFFF !important;
-            padding: 6px 6px !important;
-            font-size: 14px !important;
-            border: none !important;
-            display: block !important;
-            margin: 10px 0px !important; /* Căn giữa nút */
-        }}
-        div.stButton > button:hover {{
-            background-color: #45a049 !important;
-        }}
-        /* MỚI: Sidebar style cho theme - Luôn hiển thị và ngăn toggle ẩn */
-        .css-1d391kg {{
-            display: block !important;
-            width: 250px !important;
-            background-color: var(--bg-color) !important;
-            color: var(--text-color);
-        }}
-        /* Ẩn hamburger icon toggle sidebar để tránh ẩn nhầm */
-        [data-testid="collapsedControl"] {{
-            display: none !important;
-        }}
-        /* FIX THÊM: Luôn hiện sidebar và ngăn ẩn */
-        section[data-testid="stSidebar"] {{
-            display: block !important;
-            visibility: visible !important;
-            width: 250px !important;
-        }}
-        /* THÊM: Force sidebar mở rộng */
-        .stSidebar {
-            display: block !important;
-            transform: translateX(0) !important;
-        }
-        /* Nút toggle sidebar */
-        div.stButton > button:first-of-type {
-            background-color: #FF6B6B !important;
-            margin-top: 10px !important;
-        }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
+# CSS cải tiến (MỚI: Áp dụng theme cho messages và buttons) - SỬ DỤNG CONCAT ĐỂ TRÁNH LỖI
+typing_content = t['typing'].replace('"', '\\"')  # Escape quotes if any
+css_messages = """
+<style>
+    .message {
+        padding: 12px !important;
+        border-radius: 12px !important;
+        max-width: 75% !important;
+        display: flex !important;
+        align-items: flex-start !important;
+        gap: 12px !important;
+        margin: 8px 0 !important;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+        color: var(--text-color);
+    }
+    .assistant {
+        background-color: var(--assistant-bg) !important;
+    }
+    .user {
+        background-color: var(--user-bg) !important;
+        text-align: right !important;
+        margin-left: auto !important;
+        flex-direction: row-reverse !important;
+    }
+    .icon {
+        width: 32px !important;
+        height: 32px !important;
+        border-radius: 50% !important;
+        border: 1px solid #ddd !important;
+    }
+    .text {
+        flex: 1 !important;
+        font-size: 16px !important;
+        line-height: 1.4 !important;
+        color: var(--text-color);
+    }
+    .typing {
+        font-style: italic !important;
+        color: #888 !important;
+        padding: 5px 10px !important;
+        display: flex !important;
+        align-items: center !important;
+    }
+    @keyframes blink {
+        0% { opacity: 1; }
+        50% { opacity: 0.5; }
+        100% { opacity: 1; }
+    }
+    .typing::after {
+        content: \"\"\" + typing_content + \"\"\" !important;
+        animation: blink 1s infinite !important;
+    }
+    [data-testid="stChatInput"] {
+        border: 2px solid #ddd !important;
+        border-radius: 8px !important;
+        padding: 8px !important;
+        background-color: var(--input-bg) !important;
+        color: var(--text-color);
+    }
+    /* Tùy chỉnh nút "New chat" */
+    div.stButton > button {
+        background-color: #4CAF50 !important;
+        color: white !important;
+        border-radius: 2px solid #FFFFFF !important;
+        padding: 6px 6px !important;
+        font-size: 14px !important;
+        border: none !important;
+        display: block !important;
+        margin: 10px 0px !important; /* Căn giữa nút */
+    }
+    div.stButton > button:hover {
+        background-color: #45a049 !important;
+    }
+    /* MỚI: Sidebar style cho theme - Luôn hiển thị và ngăn toggle ẩn */
+    .css-1d391kg {
+        display: block !important;
+        width: 250px !important;
+        background-color: var(--bg-color) !important;
+        color: var(--text-color);
+    }
+    /* Ẩn hamburger icon toggle sidebar để tránh ẩn nhầm */
+    [data-testid="collapsedControl"] {
+        display: none !important;
+    }
+    /* FIX THÊM: Luôn hiện sidebar và ngăn ẩn */
+    section[data-testid="stSidebar"] {
+        display: block !important;
+        visibility: visible !important;
+        width: 250px !important;
+    }
+    /* THÊM: Force sidebar mở rộng */
+    .stSidebar {
+        display: block !important;
+        transform: translateX(0) !important;
+    }
+    /* Nút toggle sidebar */
+    div.stButton > button:first-of-type {
+        background-color: #FF6B6B !important;
+        margin-top: 10px !important;
+    }
+</style>
+"""
+st.markdown(css_messages, unsafe_allow_html=True)
 # Hiển thị lịch sử tin nhắn (trừ system)
 for message in st.session_state.messages:
     if message["role"] == "assistant":
