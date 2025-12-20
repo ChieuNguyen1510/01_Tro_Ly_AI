@@ -2,16 +2,6 @@ import streamlit as st
 from openai import OpenAI
 from base64 import b64encode
 
-# Khởi tạo session_state NGAY LẬP TỨC ở đầu để tránh lỗi KeyError
-if "language" not in st.session_state:
-    st.session_state.language = "vi"
-if "theme" not in st.session_state:
-    st.session_state.theme = "light"
-if "messages" not in st.session_state:
-    st.session_state.messages = []
-if "sidebar_open" not in st.session_state:
-    st.session_state.sidebar_open = True  # Default mở sidebar
-
 # Ẩn thanh công cụ và nút "Manage app"
 st.markdown(
     """
@@ -42,74 +32,36 @@ def img_to_base64(img_path):
     with open(img_path, "rb") as f:
         return b64encode(f.read()).decode()
 
-# Dictionary dịch ngôn ngữ (dễ mở rộng)
+# MỚI: Dictionary dịch ngôn ngữ (dễ mở rộng)
 translations = {
     'vi': {
-        'title': 'Chào mừng đến với Chatbot AI',
+        'title': 'Chào mừng đến với Chatbot AI',  # Sử dụng rfile("00.xinchao.txt") nếu muốn từ file
         'new_chat': 'Bắt đầu cuộc trò chuyện mới',
         'chat_placeholder': 'Nhập câu hỏi của bạn ở đây...',
         'typing': 'Assistant đang gõ...',
-        'show_sidebar': 'Hiện thanh bên (Ngôn ngữ & Theme)',
-        'hide_sidebar': 'Ẩn thanh bên',
     },
     'en': {
         'title': 'Welcome to AI Chatbot',
         'new_chat': 'New chat',
         'chat_placeholder': 'Enter your question here...',
         'typing': 'Assistant is typing...',
-        'show_sidebar': 'Show Sidebar (Language & Theme)',
-        'hide_sidebar': 'Hide Sidebar',
     }
 }
 
-# Lấy text theo ngôn ngữ hiện tại - BÂY GIỜ AN TOÀN VÌ ĐÃ INIT
-t = translations.get(st.session_state.language, translations['vi'])  # Fallback to 'vi'
+# Chuyển ảnh sang base64
+assistant_icon = img_to_base64("assistant_icon.png")
+user_icon = img_to_base64("user_icon.png")
 
-# Chuyển ảnh sang base64 với fallback
-try:
-    assistant_icon = img_to_base64("assistant_icon.png")
-except FileNotFoundError:
-    assistant_icon = ""  # Sẽ dùng placeholder div
-try:
-    user_icon = img_to_base64("user_icon.png")
-except FileNotFoundError:
-    user_icon = ""
+# MỚI: Khởi tạo session_state cho language và theme
+if "language" not in st.session_state:
+    st.session_state.language = 'vi'  # Default: Tiếng Việt
+if "theme" not in st.session_state:
+    st.session_state.theme = 'light'  # Default: Light
 
-# Tính toán CSS variables
-if st.session_state.theme == 'light':
-    bg_color = '#ffffff'
-    text_color = '#000000'
-    card_bg = 'rgba(255, 255, 255, 0.9)'
-    assistant_bg = '#f0f7ff'
-    user_bg = '#e6ffe6'
-    input_bg = '#fafafa'
-else:
-    bg_color = '#0e1117'
-    text_color = '#ffffff'
-    card_bg = 'rgba(0, 0, 0, 0.8)'
-    assistant_bg = '#1e293b'
-    user_bg = '#1e4a2e'
-    input_bg = '#1f2937'
-
-# Sidebar - ĐẶT SỚM VÀ CHO PHÉP TOGGLE
+# MỚI: Sidebar cho ngôn ngữ và theme
 with st.sidebar:
-    # Style cho sidebar
-    st.markdown(f"""
-    <style>
-        section[data-testid="stSidebar"] {{
-            background-color: {bg_color} !important;
-            color: {text_color} !important;
-            width: 250px !important;
-        }}
-        .css-1d391kg {{
-            background-color: {bg_color} !important;
-            color: {text_color} !important;
-        }}
-    </style>
-    """, unsafe_allow_html=True)
-    
     st.header("Cài đặt / Settings")
-   
+    
     # 1. Chọn ngôn ngữ
     selected_lang = st.selectbox(
         "Ngôn ngữ / Language",
@@ -119,8 +71,8 @@ with st.sidebar:
     )
     if selected_lang != st.session_state.language:
         st.session_state.language = selected_lang
-        st.rerun()
-   
+        st.rerun()  # Refresh để áp dụng ngôn ngữ mới
+    
     # 2. Chọn theme
     selected_theme = st.radio(
         "Theme",
@@ -129,39 +81,47 @@ with st.sidebar:
     )
     if selected_theme != st.session_state.theme:
         st.session_state.theme = selected_theme
-        st.rerun()
+        st.rerun()  # Refresh để áp dụng theme mới
 
-# CSS cho background - GIỮ NGUYÊN LAYOUT, KHÔNG FORCE SIDEBAR
+# Lấy text theo ngôn ngữ hiện tại
+t = translations[st.session_state.language]
+
+# CSS cho background với base64 (cải tiến để cover thêm phần trên, loại bỏ margin/padding top)
 try:
     bg_image_base64 = img_to_base64("background.png")
     st.markdown(
         f"""
         <style>
+            /* MỚI: CSS theme động dựa trên session_state */
             :root {{
-                --bg-color: {bg_color};
-                --text-color: {text_color};
-                --card-bg: {card_bg};
-                --assistant-bg: {assistant_bg};
-                --user-bg: {user_bg};
-                --input-bg: {input_bg};
+                --bg-color: {'#ffffff' if st.session_state.theme == 'light' else '#0e1117'};
+                --text-color: {'#000000' if st.session_state.theme == 'light' else '#ffffff'};
+                --card-bg: {'rgba(255, 255, 255, 0.9)' if st.session_state.theme == 'light' else 'rgba(0, 0, 0, 0.8)'};
+                --assistant-bg: {'#f0f7ff' if st.session_state.theme == 'light' else '#1e293b'};
+                --user-bg: {'#e6ffe6' if st.session_state.theme == 'light' else '#1e4a2e'};
+                --input-bg: {'#fafafa' if st.session_state.theme == 'light' else '#1f2937'};
             }}
+            
+            /* Background đơn giản đã hoạt động - thêm transparent cho header và footer, fix crop top */
             .stAppViewContainer {{
                 background-image: url('data:image/png;base64,{bg_image_base64}');
                 background-size: cover;
-                background-position: center top;
+                background-position: center top; /* Căn giữa theo top để tránh crop trên */
                 background-repeat: no-repeat;
                 background-attachment: fixed;
                 height: 100vh;
                 width: 100vw;
                 margin: 0;
                 padding: 0;
-                margin-top: -10px !important;
+                margin-top: -10px !important; /* Kéo lên để cover phần top bị mất */
                 color: var(--text-color);
             }}
             body {{
                 background-color: var(--bg-color);
                 color: var(--text-color);
             }}
+           
+            /* Làm header transparent để thấy background, loại bỏ padding top */
             section[data-testid="stDecoration"] {{
                 background: transparent !important;
                 padding-top: 0 !important;
@@ -172,6 +132,8 @@ try:
                 padding-top: 0 !important;
                 margin-top: 0 !important;
             }}
+           
+            /* Làm footer (chat input) transparent background */
             [data-testid="stChatInput"] {{
                 background: transparent !important;
                 border: none !important;
@@ -183,6 +145,8 @@ try:
                 backdrop-filter: blur(5px) !important;
                 color: var(--text-color);
             }}
+           
+            /* Nội dung chính */
             .main .block-container {{
                 background-color: var(--card-bg) !important;
                 border-radius: 10px !important;
@@ -191,15 +155,8 @@ try:
                 margin: 10px !important;
                 max-height: 80vh !important;
                 overflow-y: auto !important;
-                margin-top: 0 !important;
+                margin-top: 0 !important; /* Đảm bảo không margin top thêm */
                 color: var(--text-color);
-            }}
-            /* CHO PHÉP TOGGLE SIDEBAR - KHÔNG ẨN HAMBURGER */
-            section[data-testid="stSidebar"] {{
-                transition: width 0.3s ease !important;
-            }}
-            [data-testid="collapsedControl"] {{
-                display: block !important;  /* Giữ hamburger để toggle */
             }}
         </style>
         """,
@@ -208,7 +165,7 @@ try:
 except FileNotFoundError:
     st.warning("File background.png không tìm thấy. Vui lòng đặt file vào thư mục app.")
 
-# Hiển thị logo (giữ nguyên)
+# Hiển thị logo (nếu có)
 try:
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
@@ -216,192 +173,165 @@ try:
 except:
     pass
 
-# Title (giữ nguyên)
+# Hiển thị tiêu đề (MỚI: Sử dụng text từ translations, hoặc giữ rfile nếu file hỗ trợ đa ngôn ngữ)
+# title_content = rfile("00.xinchao.txt")  # Giữ nếu file là tiếng Việt, hoặc tách file riêng
 st.markdown(
-    f'<h1 style="text-align: center; font-size: 24px; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px; color: {text_color};">{t["title"]}</h1>',
+    f"""<h1 style="text-align: center; font-size: 24px; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px; color: var(--text-color);">{t['title']}</h1>""",
     unsafe_allow_html=True
 )
 
-# Nút toggle sidebar (thêm để dễ bật/tắt, giữ hamburger mặc định)
-toggle_text = t['hide_sidebar'] if st.session_state.sidebar_open else t['show_sidebar']
-if st.button(toggle_text, key="toggle_sidebar_btn"):
-    st.session_state.sidebar_open = not st.session_state.sidebar_open
-    # Sử dụng JS để toggle hamburger
-    st.components.v1.html(
-        f"""
-        <script>
-            const toggleBtn = document.querySelector('[data-testid="collapsedControl"]');
-            if (toggleBtn) {{
-                toggleBtn.click();
-            }}
-        </script>
-        """,
-        height=0,
-    )
-    st.rerun()
-
-# OpenAI setup (giữ nguyên)
+# OpenAI API
 openai_api_key = st.secrets.get("OPENAI_API_KEY")
-if openai_api_key is None:
-    st.error("OPENAI_API_KEY không được tìm thấy trong secrets. Vui lòng cấu hình.")
-    st.stop()
 client = OpenAI(api_key=openai_api_key)
 
-# Initial messages (giữ nguyên)
-try:
-    INITIAL_SYSTEM_MESSAGE = {"role": "system", "content": rfile("01.system_trainning.txt")}
-    INITIAL_ASSISTANT_MESSAGE = {"role": "assistant", "content": rfile("02.assistant.txt")}
-except FileNotFoundError as e:
-    st.error(f"File không tìm thấy: {e}. Vui lòng kiểm tra files txt.")
-    st.stop()
+# Tin nhắn hệ thống (MỚI: Có thể dịch system prompt nếu cần, nhưng giữ nguyên vì là training)
+INITIAL_SYSTEM_MESSAGE = {"role": "system", "content": rfile("01.system_trainning.txt")}
+INITIAL_ASSISTANT_MESSAGE = {"role": "assistant", "content": rfile("02.assistant.txt")}
 
-if not st.session_state.messages:
+# Khởi tạo session_state.messages nếu chưa có
+if "messages" not in st.session_state:
     st.session_state.messages = [INITIAL_SYSTEM_MESSAGE, INITIAL_ASSISTANT_MESSAGE]
 
-# Nút new chat (giữ nguyên)
-if st.button(t['new_chat'], key="new_chat_btn"):
+# Nút "Bắt đầu cuộc trò chuyện mới" (MỚI: Text động)
+if st.button(t['new_chat']):
+    # Reset messages về trạng thái ban đầu
     st.session_state.messages = [INITIAL_SYSTEM_MESSAGE, INITIAL_ASSISTANT_MESSAGE]
+    # Làm mới giao diện bằng cách rerun ứng dụng
     st.rerun()
 
-# CSS cho messages (giữ nguyên)
-typing_content = t['typing'].replace('"', '\\"')
-st.markdown(f"""
-<style>
-    .message {{
-        padding: 12px !important;
-        border-radius: 12px !important;
-        max-width: 75% !important;
-        display: flex !important;
-        align-items: flex-start !important;
-        gap: 12px !important;
-        margin: 8px 0 !important;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
-        color: var(--text-color);
-    }}
-    .assistant {{
-        background-color: var(--assistant-bg) !important;
-    }}
-    .user {{
-        background-color: var(--user-bg) !important;
-        text-align: right !important;
-        margin-left: auto !important;
-        flex-direction: row-reverse !important;
-    }}
-    .icon {{
-        width: 32px !important;
-        height: 32px !important;
-        border-radius: 50% !important;
-        border: 1px solid #ddd !important;
-    }}
-    .text {{
-        flex: 1 !important;
-        font-size: 16px !important;
-        line-height: 1.4 !important;
-        color: var(--text-color);
-    }}
-    .typing {{
-        font-style: italic !important;
-        color: #888 !important;
-        padding: 5px 10px !important;
-        display: flex !important;
-        align-items: center !important;
-    }}
-    @keyframes blink {{
-        0% {{ opacity: 1; }}
-        50% {{ opacity: 0.5; }}
-        100% {{ opacity: 1; }}
-    }}
-    .typing::after {{
-        content: "{typing_content}" !important;
-        animation: blink 1s infinite !important;
-    }}
-    [data-testid="stChatInput"] {{
-        border: 2px solid #ddd !important;
-        border-radius: 8px !important;
-        padding: 8px !important;
-        background-color: var(--input-bg) !important;
-        color: var(--text-color);
-    }}
-    div.stButton > button {{
-        background-color: #4CAF50 !important;
-        color: white !important;
-        border-radius: 2px solid #FFFFFF !important;
-        padding: 6px 6px !important;
-        font-size: 14px !important;
-        border: none !important;
-        display: block !important;
-        margin: 10px auto !important;
-    }}
-    div.stButton > button:hover {{
-        background-color: #45a049 !important;
-    }}
-    div.stButton > button:first-of-type {{
-        background-color: #FF6B6B !important;
-        margin-top: 10px !important;
-    }}
-</style>
-""", unsafe_allow_html=True)
+# CSS cải tiến (MỚI: Áp dụng theme cho messages và buttons)
+st.markdown(
+    f"""
+    <style>
+        .message {{
+            padding: 12px !important;
+            border-radius: 12px !important;
+            max-width: 75% !important;
+            display: flex !important;
+            align-items: flex-start !important;
+            gap: 12px !important;
+            margin: 8px 0 !important;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+            color: var(--text-color);
+        }}
+        .assistant {{
+            background-color: var(--assistant-bg) !important;
+        }}
+        .user {{
+            background-color: var(--user-bg) !important;
+            text-align: right !important;
+            margin-left: auto !important;
+            flex-direction: row-reverse !important;
+        }}
+        .icon {{
+            width: 32px !important;
+            height: 32px !important;
+            border-radius: 50% !important;
+            border: 1px solid #ddd !important;
+        }}
+        .text {{
+            flex: 1 !important;
+            font-size: 16px !important;
+            line-height: 1.4 !important;
+            color: var(--text-color);
+        }}
+        .typing {{
+            font-style: italic !important;
+            color: #888 !important;
+            padding: 5px 10px !important;
+            display: flex !important;
+            align-items: center !important;
+        }}
+        @keyframes blink {{
+            0% {{ opacity: 1; }}
+            50% {{ opacity: 0.5; }}
+            100% {{ opacity: 1; }}
+        }}
+        .typing::after {{
+            content: "{t['typing']}" !important;  /* MỚI: Text typing động */
+            animation: blink 1s infinite !important;
+        }}
+        [data-testid="stChatInput"] {{
+            border: 2px solid #ddd !important;
+            border-radius: 8px !important;
+            padding: 8px !important;
+            background-color: var(--input-bg) !important;
+            color: var(--text-color);
+        }}
+        /* Tùy chỉnh nút "New chat" */
+        div.stButton > button {{
+            background-color: #4CAF50 !important;
+            color: white !important;
+            border-radius: 2px solid #FFFFFF !important;
+            padding: 6px 6px !important;
+            font-size: 14px !important;
+            border: none !important;
+            display: block !important;
+            margin: 10px 0px !important; /* Căn giữa nút */
+        }}
+        div.stButton > button:hover {{
+            background-color: #45a049 !important;
+        }}
+        /* MỚI: Sidebar style cho theme */
+        .css-1d391kg {{
+            background-color: var(--bg-color) !important;
+            color: var(--text-color);
+        }}
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 
-# Hiển thị messages (giữ nguyên)
+# Hiển thị lịch sử tin nhắn (trừ system)
 for message in st.session_state.messages:
-    if message["role"] == "system":
-        continue
     if message["role"] == "assistant":
-        icon_html = f'<img src="data:image/png;base64,{assistant_icon}" class="icon" alt="Assistant" />' if assistant_icon else '<div class="icon" style="background: var(--assistant-bg); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white;">A</div>'
         st.markdown(f'''
         <div class="message assistant">
-            {icon_html}
+            <img src="data:image/png;base64,{assistant_icon}" class="icon" />
             <div class="text">{message["content"]}</div>
         </div>
         ''', unsafe_allow_html=True)
     elif message["role"] == "user":
-        icon_html = f'<img src="data:image/png;base64,{user_icon}" class="icon" alt="User" />' if user_icon else '<div class="icon" style="background: var(--user-bg); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: black;">U</div>'
         st.markdown(f'''
         <div class="message user">
+            <img src="data:image/png;base64,{user_icon}" class="icon" />
             <div class="text">{message["content"]}</div>
-            {icon_html}
         </div>
         ''', unsafe_allow_html=True)
 
-# Chat input (giữ nguyên)
+# Ô nhập câu hỏi (MỚI: Placeholder động theo ngôn ngữ)
 if prompt := st.chat_input(t['chat_placeholder']):
     st.session_state.messages.append({"role": "user", "content": prompt})
-    icon_html = f'<img src="data:image/png;base64,{user_icon}" class="icon" alt="User" />' if user_icon else '<div class="icon" style="background: var(--user-bg); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: black;">U</div>'
     st.markdown(f'''
     <div class="message user">
+        <img src="data:image/png;base64,{user_icon}" class="icon" />
         <div class="text">{prompt}</div>
-        {icon_html}
     </div>
     ''', unsafe_allow_html=True)
-    st.rerun()  # Rerun để hiển thị prompt ngay
-
-    # Typing indicator
+    # Assistant đang trả lời...
     typing_placeholder = st.empty()
-    typing_placeholder.markdown('<div class="typing"></div>', unsafe_allow_html=True)
-
-    # API call
+    typing_placeholder.markdown(
+        '<div class="typing">Assistant is typing..</div>',  # Đã override bằng CSS động
+        unsafe_allow_html=True
+    )
+    # Gọi API
     response = ""
-    try:
-        model = rfile("module_chatgpt.txt").strip()
-        stream = client.chat.completions.create(
-            model=model,
-            messages=[{"role": m["role"], "content": m["content"]} for m in st.session_state.messages],
-            stream=True,
-        )
-        for chunk in stream:
-            if chunk.choices and chunk.choices[0].delta.content is not None:
-                response += chunk.choices[0].delta.content
-    except Exception as e:
-        response = f"Lỗi khi gọi API: {str(e)}. Vui lòng kiểm tra key và model."
-
+    stream = client.chat.completions.create(
+        model=rfile("module_chatgpt.txt").strip(),
+        messages=[{"role": m["role"], "content": m["content"]} for m in st.session_state.messages],
+        stream=True,
+    )
+    for chunk in stream:
+        if chunk.choices:
+            response += chunk.choices[0].delta.content or ""
+    # Xóa dòng "Assistant is typing..."
     typing_placeholder.empty()
-    icon_html = f'<img src="data:image/png;base64,{assistant_icon}" class="icon" alt="Assistant" />' if assistant_icon else '<div class="icon" style="background: var(--assistant-bg); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white;">A</div>'
+    # Hiển thị phản hồi từ assistant
     st.markdown(f'''
     <div class="message assistant">
-        {icon_html}
+        <img src="data:image/png;base64,{assistant_icon}" class="icon" />
         <div class="text">{response}</div>
     </div>
     ''', unsafe_allow_html=True)
     
     st.session_state.messages.append({"role": "assistant", "content": response})
-    st.rerun()
