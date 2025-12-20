@@ -173,6 +173,16 @@ try:
                 color: var(--text-color) !important;
                 box-shadow: none !important;
                 box-sizing: border-box !important;
+                /* SỬA: Loại bỏ border/padding thừa cho toàn bộ input container */
+                padding: 0 !important;
+                margin: 0 !important;
+            }}
+            [data-testid="stChatInput"] > div {{
+                border: none !important;
+                background: transparent !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                box-sizing: border-box !important;
             }}
             [data-testid="stChatInput"] > div > div {{
                 background: var(--input-inner-bg) !important;
@@ -188,6 +198,8 @@ try:
                 display: flex !important;
                 align-items: center !important;
                 box-sizing: border-box !important; /* SỬA: Box-sizing cho container */
+                /* SỬA: Loại bỏ padding/margin thừa để không tạo ô con */
+                gap: 8px !important; /* Khoảng cách giữa input và send button */
             }}
             [data-testid="stChatInput"] > div > div:hover {{
                 background: var(--input-inner-bg) !important; /* Giữ nguyên nền khi hover */
@@ -214,6 +226,7 @@ try:
                 box-sizing: border-box !important; /* SỬA: Box-sizing cho input */
                 /* MỚI: Giữ nguyên style khi focus/hover */
                 vertical-align: middle !important; /* SỬA: Align để consistent với placeholder */
+                flex: 1 !important; /* SỬA: Flex để fill space, tránh ô thừa */
             }}
             [data-testid="stChatInput"] input:focus {{
                 background: transparent !important;
@@ -238,6 +251,30 @@ try:
                 margin: 0 !important; /* SỬA: Margin 0 */
                 vertical-align: middle !important; /* SỬA: Align giống text */
                 box-sizing: border-box !important;
+            }}
+            /* SỬA: Target send button (nút >) để loại bỏ ô thừa */
+            [data-testid="stChatInput"] button, [data-testid="stChatInput"] [role="button"] {{
+                background: transparent !important;
+                border: none !important;
+                box-shadow: none !important;
+                padding: 0 4px !important; /* Padding nhẹ cho icon */
+                margin: 0 !important;
+                color: var(--text-color) !important;
+                border-radius: 0 !important; /* Loại bỏ border-radius thừa */
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                width: auto !important;
+                height: 100% !important;
+                min-width: 24px !important; /* Kích thước icon nhỏ gọn */
+            }}
+            [data-testid="stChatInput"] button:hover, [data-testid="stChatInput"] [role="button"]:hover {{
+                background: transparent !important; /* Không thay đổi khi hover */
+                border: none !important;
+            }}
+            [data-testid="stChatInput"] button svg, [data-testid="stChatInput"] [role="button"] svg {{
+                fill: var(--text-color) !important; /* Màu icon theo theme */
+                stroke: none !important;
             }}
             /* SỬA: Loại bỏ tất cả borders thừa ở nested elements */
             [data-testid="stChatInput"] > div > div > div {{
