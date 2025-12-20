@@ -182,6 +182,9 @@ try:
                 padding: 8px 12px !important;
                 /* MỚI: Giữ nguyên style khi hover/focus */
                 transition: none !important; /* Loại bỏ transition để không thay đổi mượt */
+                min-height: 40px !important; /* SỬA: Fixed height để consistent khi có/không text */
+                display: flex !important;
+                align-items: center !important;
             }}
             [data-testid="stChatInput"] > div > div:hover {{
                 background: var(--input-inner-bg) !important; /* Giữ nguyên nền khi hover */
@@ -199,6 +202,11 @@ try:
                 border: none !important;
                 color: var(--text-color) !important;
                 outline: none !important;
+                font-size: 16px !important; /* SỬA: Fixed font-size giống text */
+                line-height: 1.4 !important; /* SỬA: Fixed line-height giống text */
+                font-family: inherit !important;
+                padding: 0 !important; /* SỬA: Padding 0 để không thay đổi layout */
+                height: 100% !important; /* SỬA: Full height để consistent */
                 /* MỚI: Giữ nguyên style khi focus/hover */
             }}
             [data-testid="stChatInput"] input:focus {{
@@ -210,6 +218,10 @@ try:
             }}
             [data-testid="stChatInput"] input::placeholder {{
                 color: var(--placeholder-color) !important;
+                font-size: 16px !important; /* SỬA: Giống text */
+                line-height: 1.4 !important; /* SỬA: Giống text */
+                font-family: inherit !important;
+                padding: 0 !important; /* SỬA: Padding 0 để layout giống */
             }}
             /* Thêm: Force transparent cho tất cả child elements của chat input */
             [data-testid="stChatInput"] * {{
