@@ -57,9 +57,9 @@ def img_to_base64(img_path):
 translations = {
     'vi': {
         'title': 'Chào mừng đến với Chatbot AI',
-        'new_chat': 'Bắt đầu cuộc trò chuyện mới',
+        'new_chat': 'Trò chuyện mới',
         'chat_placeholder': 'Nhập câu hỏi của bạn ở đây...',
-        'typing': 'Assistant đang gõ111...',
+        'typing': 'Assistant đang soạn...',
     },
     'en': {
         'title': 'Welcome to AI Chatbot',
