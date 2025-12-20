@@ -1,7 +1,7 @@
 import streamlit as st
 from openai import OpenAI
 from base64 import b64encode
-import PyPDF2  # Thêm import để đọc PDF
+import PyPDF2 # Thêm import để đọc PDF
 # MỚI: Set page config để wide layout, giúp sidebar có chỗ hơn và luôn mở
 st.set_page_config(
     layout="wide",
@@ -41,7 +41,7 @@ def read_pdf(pdf_path):
             reader = PyPDF2.PdfReader(file)
             text = ""
             for page in reader.pages:
-                text += page.extract_text() + "\n"  # Thêm newline giữa các trang
+                text += page.extract_text() + "\n" # Thêm newline giữa các trang
             return text.strip()
     except FileNotFoundError:
         st.error(f"File {pdf_path} không tìm thấy. Vui lòng đặt file vào thư mục app.")
@@ -79,7 +79,7 @@ if "theme" not in st.session_state:
 # MỚI: Sidebar cho ngôn ngữ và theme (sẽ luôn mở nhờ page_config)
 with st.sidebar:
     st.header("Cài đặt / Settings")
-  
+ 
     # 1. Chọn ngôn ngữ
     selected_lang = st.selectbox(
         "Ngôn ngữ / Language",
@@ -90,7 +90,7 @@ with st.sidebar:
     if selected_lang != st.session_state.language:
         st.session_state.language = selected_lang
         st.rerun() # Refresh để áp dụng ngôn ngữ mới
-  
+ 
     # 2. Chọn theme
     selected_theme = st.radio(
         "Theme",
@@ -117,9 +117,12 @@ try:
                 --card-bg: {'rgba(255, 255, 255, 0.9)' if st.session_state.theme == 'light' else 'rgba(0, 0, 0, 0.8)'};
                 --assistant-bg: {'#f0f7ff' if st.session_state.theme == 'light' else '#1e293b'};
                 --user-bg: {'#e6ffe6' if st.session_state.theme == 'light' else '#1e4a2e'};
-                --input-bg: {'#fafafa' if st.session_state.theme == 'light' else '#1f2937'};
+                --input-bg: {'rgba(255, 255, 255, 0.1)' if st.session_state.theme == 'light' else 'rgba(0, 0, 0, 0.3)'};
+                --border-color: {'rgba(0, 0, 0, 0.2)' if st.session_state.theme == 'light' else 'rgba(255, 255, 255, 0.3)'};
+                --placeholder-color: {'rgba(0, 0, 0, 0.5)' if st.session_state.theme == 'light' else 'rgba(255, 255, 255, 0.7)'};
+                --input-inner-bg: {'rgba(255, 255, 255, 0.2)' if st.session_state.theme == 'light' else 'rgba(255, 255, 255, 0.1)'};
             }}
-          
+         
             /* Background đơn giản đã hoạt động - thêm transparent cho header và footer, fix crop top */
             .stAppViewContainer {{
                 background-image: url('data:image/png;base64,{bg_image_base64}');
@@ -138,7 +141,7 @@ try:
                 background-color: var(--bg-color);
                 color: var(--text-color);
             }}
-         
+        
             /* Làm header transparent để thấy background, loại bỏ padding top */
             section[data-testid="stDecoration"] {{
                 background: transparent !important;
@@ -150,20 +153,163 @@ try:
                 padding-top: 0 !important;
                 margin-top: 0 !important;
             }}
-         
-            /* Làm footer (chat input) transparent background */
+        
+            /* SỬA: Làm footer (chat input) transparent hoàn toàn, loại bỏ nền trắng - Target các selector sâu hơn */
+            [data-testid="stBottom"] > div {{
+                background: transparent !important;
+            }}
+            .stBottom > div {{
+                background: transparent !important;
+            }}
+            .stChatInputContainer > div {{
+                background: transparent !important;
+            }}
+            .stChatFloatingInputContainer {{
+                background: transparent !important;
+            }}
             [data-testid="stChatInput"] {{
                 background: transparent !important;
                 border: none !important;
-                color: var(--text-color);
+                color: var(--text-color) !important;
+                box-shadow: none !important;
+                box-sizing: border-box !important;
+                /* SỬA: Loại bỏ border/padding thừa cho toàn bộ input container */
+                padding: 0 !important;
+                margin: 0 !important;
+            }}
+            [data-testid="stChatInput"] > div {{
+                border: none !important;
+                background: transparent !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                box-sizing: border-box !important;
             }}
             [data-testid="stChatInput"] > div > div {{
-                background: var(--input-bg) !important;
-                border-radius: 10px !important;
+                background: var(--input-inner-bg) !important;
+                border: none !important; /* SỬA: Bỏ viền hoàn toàn */
+                border-radius: 0 !important; /* SỬA: Bỏ border-radius để phẳng hơn */
                 backdrop-filter: blur(5px) !important;
-                color: var(--text-color);
+                color: var(--text-color) !important;
+                padding: 0 !important; /* SỬA: Bỏ padding hoàn toàn để sát mép */
+                /* MỚI: Giữ nguyên style khi hover/focus */
+                transition: none !important; /* Loại bỏ transition để không thay đổi mượt */
+                min-height: 44px !important; /* SỬA: Tăng height fixed để consistent hơn */
+                height: 44px !important; /* SỬA: Fixed height tuyệt đối */
+                display: flex !important;
+                align-items: center !important;
+                box-sizing: border-box !important; /* SỬA: Box-sizing cho container */
+                /* SỬA: Loại bỏ padding/margin thừa để không tạo ô con */
+                gap: 0 !important; /* SỬA: Bỏ gap giữa input và send button */
+                justify-content: space-between !important; /* SỬA: Input left, button right, loại bỏ khoảng trống thừa */
             }}
-         
+            [data-testid="stChatInput"] > div > div:hover {{
+                background: var(--input-inner-bg) !important; /* Giữ nguyên nền khi hover */
+                border: none !important; /* SỬA: Giữ không viền khi hover */
+                box-shadow: none !important;
+            }}
+            [data-testid="stChatInput"] > div > div:focus-within {{
+                background: var(--input-inner-bg) !important; /* Giữ nguyên nền khi focus */
+                border: none !important; /* SỬA: Giữ không viền khi focus */
+                box-shadow: none !important; /* Loại bỏ shadow focus mặc định */
+                outline: none !important;
+            }}
+            [data-testid="stChatInput"] input {{
+                background: transparent !important;
+                border: none !important;
+                color: var(--text-color) !important;
+                outline: none !important;
+                font-size: 16px !important; /* SỬA: Fixed font-size giống text */
+                line-height: 1.4 !important; /* SỬA: Fixed line-height giống text */
+                font-family: inherit !important;
+                padding: 0 !important; /* SỬA: Padding 0 để không thay đổi layout */
+                margin: 0 !important; /* SỬA: Margin 0 để tránh shift */
+                height: 100% !important; /* SỬA: Full height để consistent */
+                box-sizing: border-box !important; /* SỬA: Box-sizing cho input */
+                /* MỚI: Giữ nguyên style khi focus/hover */
+                vertical-align: middle !important; /* SỬA: Align để consistent với placeholder */
+                flex: 1 !important; /* SỬA: Flex để fill space, tránh ô thừa */
+                width: 100% !important; /* SỬA: Width full để loại bỏ khoảng trống đầu/cuối */
+            }}
+            [data-testid="stChatInput"] input:focus {{
+                background: transparent !important;
+                border: none !important;
+                color: var(--text-color) !important;
+                outline: none !important;
+                box-shadow: none !important;
+                margin: 0 !important; /* Giữ margin 0 khi focus */
+            }}
+            [data-testid="stChatInput"] input:valid {{
+                /* SỬA: Khi có text (valid), force style giống placeholder state */
+                padding: 0 !important;
+                margin: 0 !important;
+                height: 100% !important;
+            }}
+            [data-testid="stChatInput"] input::placeholder {{
+                color: var(--placeholder-color) !important;
+                font-size: 16px !important; /* SỬA: Giống text */
+                line-height: 1.4 !important; /* SỬA: Giống text */
+                font-family: inherit !important;
+                padding: 0 !important; /* SỬA: Padding 0 để layout giống */
+                margin: 0 !important; /* SỬA: Margin 0 */
+                vertical-align: middle !important; /* SỬA: Align giống text */
+                box-sizing: border-box !important;
+            }}
+            /* SỬA: Target send button (nút >) để loại bỏ ô thừa */
+            [data-testid="stChatInput"] button, [data-testid="stChatInput"] [role="button"] {{
+                background: transparent !important;
+                border: none !important;
+                box-shadow: none !important;
+                padding: 0 !important; /* SỬA: Bỏ padding cho button để sát mép */
+                margin: 0 !important;
+                color: var(--text-color) !important;
+                border-radius: 0 !important; /* Loại bỏ border-radius thừa */
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                width: auto !important;
+                height: 100% !important;
+                min-width: 20px !important; /* SỬA: Giảm kích thước icon để sát hơn */
+            }}
+            [data-testid="stChatInput"] button:hover, [data-testid="stChatInput"] [role="button"]:hover {{
+                background: transparent !important; /* Không thay đổi khi hover */
+                border: none !important;
+            }}
+            [data-testid="stChatInput"] button svg, [data-testid="stChatInput"] [role="button"] svg {{
+                fill: var(--text-color) !important; /* Màu icon theo theme */
+                stroke: none !important;
+                width: 16px !important; /* SỬA: Giảm kích thước SVG để sát mép */
+                height: 16px !important;
+            }}
+            /* SỬA: Loại bỏ tất cả borders thừa ở nested elements */
+            [data-testid="stChatInput"] > div > div > div {{
+                border: none !important;
+                background: transparent !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                box-sizing: border-box !important;
+            }}
+            [data-testid="stChatInput"] > div > div > div > input {{
+                border: none !important;
+                background: transparent !important;
+            }}
+            /* Thêm: Force transparent cho tất cả child elements của chat input */
+            [data-testid="stChatInput"] * {{
+                background: transparent !important;
+                box-shadow: none !important;
+                border: none !important;
+                color: var(--text-color) !important;
+                box-sizing: border-box !important; /* SỬA: Áp dụng box-sizing toàn bộ */
+                margin: 0 !important; /* SỬA: Margin 0 để tránh shift */
+                /* MỚI: Giữ nguyên khi focus/hover */
+                &:focus {{
+                    background: transparent !important;
+                    box-shadow: none !important;
+                    border: none !important;
+                    outline: none !important;
+                    margin: 0 !important;
+                }}
+            }}
+        
             /* Nội dung chính */
             .main .block-container {{
                 background-color: var(--card-bg) !important;
@@ -198,11 +344,11 @@ st.markdown(
 openai_api_key = st.secrets.get("OPENAI_API_KEY")
 client = OpenAI(api_key=openai_api_key)
 # MỚI: System từ PDF (data), Assistant từ file text cũ, Model từ file text
-pdf_data = read_pdf("data.pdf")  # Chỉ dùng cho system prompt (data)
-assistant_content = rfile("02.assistant.txt")  # Lời chào giữ nguyên
-model_name = rfile("module_chatgpt.txt").strip() or "gpt-4o-mini"  # Model từ file hoặc fallback
-INITIAL_SYSTEM_MESSAGE = {"role": "system", "content": pdf_data}  # System dùng PDF data
-INITIAL_ASSISTANT_MESSAGE = {"role": "assistant", "content": assistant_content or "Xin chào! Tôi là trợ lý AI của bạn. Hãy hỏi tôi bất cứ điều gì."}  # Fallback nếu file không có
+pdf_data = read_pdf("data.pdf") # Chỉ dùng cho system prompt (data)
+assistant_content = rfile("02.assistant.txt") # Lời chào giữ nguyên
+model_name = rfile("module_chatgpt.txt").strip() or "gpt-4o-mini" # Model từ file hoặc fallback
+INITIAL_SYSTEM_MESSAGE = {"role": "system", "content": pdf_data} # System dùng PDF data
+INITIAL_ASSISTANT_MESSAGE = {"role": "assistant", "content": assistant_content or "Xin chào! Tôi là trợ lý AI của bạn. Hãy hỏi tôi bất cứ điều gì."} # Fallback nếu file không có
 # Khởi tạo session_state.messages nếu chưa có
 if "messages" not in st.session_state:
     st.session_state.messages = [INITIAL_SYSTEM_MESSAGE, INITIAL_ASSISTANT_MESSAGE]
@@ -210,7 +356,7 @@ if "messages" not in st.session_state:
 if st.button(t['new_chat']):
     st.session_state.messages = [INITIAL_SYSTEM_MESSAGE, INITIAL_ASSISTANT_MESSAGE]
     st.rerun()
-# CSS cải tiến (FIX: Cho phép toggle sidebar với <<<)
+# CSS cải tiến (FIX: Cho phép toggle sidebar với <<<) - Loại bỏ quy tắc chat input ở đây để tránh conflict
 st.markdown(
     f"""
     <style>
@@ -261,13 +407,6 @@ st.markdown(
         .typing::after {{
             content: "{t['typing']}" !important;
             animation: blink 1s infinite !important;
-        }}
-        [data-testid="stChatInput"] {{
-            border: 2px solid #ddd !important;
-            border-radius: 8px !important;
-            padding: 8px !important;
-            background-color: var(--input-bg) !important;
-            color: var(--text-color);
         }}
         /* Tùy chỉnh nút "New chat" */
         div.stButton > button {{
@@ -372,5 +511,5 @@ if prompt := st.chat_input(t['chat_placeholder']):
         <div class="text">{response}</div>
     </div>
     ''', unsafe_allow_html=True)
-  
+ 
     st.session_state.messages.append({"role": "assistant", "content": response})
