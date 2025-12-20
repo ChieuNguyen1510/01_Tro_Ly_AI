@@ -186,7 +186,7 @@ try:
             }}
             [data-testid="stChatInput"] > div > div {{
                 background: var(--input-inner-bg) !important;
-                border: 1px solid var(--border-color) !important;
+                border: none !important; /* SỬA: Bỏ viền hoàn toàn */
                 border-radius: 10px !important;
                 backdrop-filter: blur(5px) !important;
                 color: var(--text-color) !important;
@@ -203,12 +203,12 @@ try:
             }}
             [data-testid="stChatInput"] > div > div:hover {{
                 background: var(--input-inner-bg) !important; /* Giữ nguyên nền khi hover */
-                border: 1px solid var(--border-color) !important; /* Giữ nguyên viền */
+                border: none !important; /* SỬA: Giữ không viền khi hover */
                 box-shadow: none !important;
             }}
             [data-testid="stChatInput"] > div > div:focus-within {{
                 background: var(--input-inner-bg) !important; /* Giữ nguyên nền khi focus */
-                border: 1px solid var(--border-color) !important; /* Giữ nguyên viền */
+                border: none !important; /* SỬA: Giữ không viền khi focus */
                 box-shadow: none !important; /* Loại bỏ shadow focus mặc định */
                 outline: none !important;
             }}
