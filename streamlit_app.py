@@ -187,10 +187,10 @@ try:
             [data-testid="stChatInput"] > div > div {{
                 background: var(--input-inner-bg) !important;
                 border: none !important; /* SỬA: Bỏ viền hoàn toàn */
-                border-radius: 10px !important;
+                border-radius: 0 !important; /* SỬA: Bỏ border-radius để phẳng hơn */
                 backdrop-filter: blur(5px) !important;
                 color: var(--text-color) !important;
-                padding: 8px 12px !important;
+                padding: 4px 8px !important; /* SỬA: Giảm padding để loại bỏ khoảng trống đầu/cuối */
                 /* MỚI: Giữ nguyên style khi hover/focus */
                 transition: none !important; /* Loại bỏ transition để không thay đổi mượt */
                 min-height: 44px !important; /* SỬA: Tăng height fixed để consistent hơn */
@@ -199,7 +199,8 @@ try:
                 align-items: center !important;
                 box-sizing: border-box !important; /* SỬA: Box-sizing cho container */
                 /* SỬA: Loại bỏ padding/margin thừa để không tạo ô con */
-                gap: 8px !important; /* Khoảng cách giữa input và send button */
+                gap: 4px !important; /* SỬA: Giảm gap giữa input và send button */
+                justify-content: space-between !important; /* SỬA: Input left, button right, loại bỏ khoảng trống thừa */
             }}
             [data-testid="stChatInput"] > div > div:hover {{
                 background: var(--input-inner-bg) !important; /* Giữ nguyên nền khi hover */
@@ -227,6 +228,7 @@ try:
                 /* MỚI: Giữ nguyên style khi focus/hover */
                 vertical-align: middle !important; /* SỬA: Align để consistent với placeholder */
                 flex: 1 !important; /* SỬA: Flex để fill space, tránh ô thừa */
+                width: 100% !important; /* SỬA: Width full để loại bỏ khoảng trống đầu/cuối */
             }}
             [data-testid="stChatInput"] input:focus {{
                 background: transparent !important;
