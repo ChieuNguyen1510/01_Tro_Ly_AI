@@ -2,7 +2,7 @@ import streamlit as st
 from openai import OpenAI
 from base64 import b64encode
 
-# MỚI: Set page config để wide layout, giúp sidebar có chỗ hơn và luôn mở
+# MỚI: Set page config để wide layout, giúp sidebar có chỗ hơn
 st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"  # Default: Luôn mở sidebar khi load
@@ -45,12 +45,14 @@ translations = {
         'new_chat': 'Bắt đầu cuộc trò chuyện mới',
         'chat_placeholder': 'Nhập câu hỏi của bạn ở đây...',
         'typing': 'Assistant đang gõ...',
+        'toggle_sidebar': 'Ẩn/Hiện Sidebar',
     },
     'en': {
         'title': 'Welcome to AI Chatbot',
         'new_chat': 'New chat',
         'chat_placeholder': 'Enter your question here...',
         'typing': 'Assistant is typing...',
+        'toggle_sidebar': 'Toggle Sidebar',
     }
 }
 
@@ -58,41 +60,51 @@ translations = {
 assistant_icon = img_to_base64("assistant_icon.png")
 user_icon = img_to_base64("user_icon.png")
 
-# MỚI: Khởi tạo session_state cho language và theme
+# MỚI: Khởi tạo session_state cho language, theme, và sidebar_open
 if "language" not in st.session_state:
     st.session_state.language = 'vi'  # Default: Tiếng Việt
 if "theme" not in st.session_state:
     st.session_state.theme = 'light'  # Default: Light
+if "sidebar_open" not in st.session_state:
+    st.session_state.sidebar_open = True  # Default: Mở sidebar
 
-# MỚI: Sidebar cho ngôn ngữ và theme (sẽ luôn mở nhờ page_config)
-with st.sidebar:
-    st.header("Cài đặt / Settings")
-   
-    # 1. Chọn ngôn ngữ
-    selected_lang = st.selectbox(
-        "Ngôn ngữ / Language",
-        options=['vi', 'en'],
-        index=0 if st.session_state.language == 'vi' else 1,
-        format_func=lambda x: 'Tiếng Việt' if x == 'vi' else 'English'
-    )
-    if selected_lang != st.session_state.language:
-        st.session_state.language = selected_lang
-        st.rerun()  # Refresh để áp dụng ngôn ngữ mới
-   
-    # 2. Chọn theme
-    selected_theme = st.radio(
-        "Theme",
-        options=['light', 'dark'],
-        index=0 if st.session_state.theme == 'light' else 1
-    )
-    if selected_theme != st.session_state.theme:
-        st.session_state.theme = selected_theme
-        st.rerun()  # Refresh để áp dụng theme mới
+# Nút toggle sidebar ở đầu trang (trong main content)
+col1, col2 = st.columns([1, 10])  # Để nút ở góc phải
+with col1:
+    if st.button(t['toggle_sidebar']):
+        st.session_state.sidebar_open = not st.session_state.sidebar_open
+        st.rerun()
+
+# MỚI: Sidebar cho ngôn ngữ và theme (toggle dựa trên state)
+if st.session_state.sidebar_open:
+    with st.sidebar:
+        st.header("Cài đặt / Settings")
+       
+        # 1. Chọn ngôn ngữ
+        selected_lang = st.selectbox(
+            "Ngôn ngữ / Language",
+            options=['vi', 'en'],
+            index=0 if st.session_state.language == 'vi' else 1,
+            format_func=lambda x: 'Tiếng Việt' if x == 'vi' else 'English'
+        )
+        if selected_lang != st.session_state.language:
+            st.session_state.language = selected_lang
+            st.rerun()  # Refresh để áp dụng ngôn ngữ mới
+       
+        # 2. Chọn theme
+        selected_theme = st.radio(
+            "Theme",
+            options=['light', 'dark'],
+            index=0 if st.session_state.theme == 'light' else 1
+        )
+        if selected_theme != st.session_state.theme:
+            st.session_state.theme = selected_theme
+            st.rerun()  # Refresh để áp dụng theme mới
 
 # Lấy text theo ngôn ngữ hiện tại
 t = translations[st.session_state.language]
 
-# CSS cho background với base64 (cải tiến để cover thêm phần trên, loại bỏ margin/padding top)
+# CSS cho background với base64
 try:
     bg_image_base64 = img_to_base64("background.png")
     st.markdown(
@@ -202,7 +214,8 @@ if st.button(t['new_chat']):
     st.session_state.messages = [INITIAL_SYSTEM_MESSAGE, INITIAL_ASSISTANT_MESSAGE]
     st.rerun()
 
-# CSS cải tiến (FIX: Sidebar luôn mở)
+# CSS cải tiến (FIX: Toggle sidebar với CSS động)
+sidebar_class = "" if st.session_state.sidebar_open else " sidebar-hidden"
 st.markdown(
     f"""
     <style>
@@ -261,7 +274,7 @@ st.markdown(
             background-color: var(--input-bg) !important;
             color: var(--text-color);
         }}
-        /* Tùy chỉnh nút "New chat" */
+        /* Tùy chỉnh nút "New chat" và toggle */
         div.stButton > button {{
             background-color: #4CAF50 !important;
             color: white !important;
@@ -275,48 +288,60 @@ st.markdown(
         div.stButton > button:hover {{
             background-color: #45a049 !important;
         }}
-        /* FIX: Sidebar luôn mở - Force expanded state */
+        /* MỚI: Toggle Sidebar - Ẩn/Hiện với CSS class động */
         section[data-testid="stSidebar"] {{
-            width: 300px !important;
-            min-width: 300px !important;
-            max-width: 300px !important;
-            display: block !important;
-            visibility: visible !important;
-            opacity: 1 !important;
-            transform: translateX(0) !important;
-            position: relative !important;
-            z-index: 10 !important;
-            overflow: visible !important;
+            transition: transform 0.3s ease-in-out !important;
             background-color: var(--bg-color) !important;
             color: var(--text-color) !important;
         }}
-        /* Button toggle sidebar (ẩn nếu không cần) - Streamlit default toggle */
-        [data-testid="collapsedControl"] {{
-            display: none !important;  /* Ẩn nút collapse để force luôn mở */
+        section[data-testid="stSidebar"].sidebar-hidden {{
+            transform: translateX(-100%) !important;
+            width: 0 !important;
+            min-width: 0 !important;
+            max-width: 0 !important;
+            overflow: hidden !important;
+            opacity: 0 !important;
+            visibility: hidden !important;
         }}
-        /* Media query cho mobile: Force sidebar full-width và luôn hiện */
+        /* Khi sidebar ẩn, mở rộng main content */
+        .main {{
+            margin-left: {'0px' if not st.session_state.sidebar_open else '300px'} !important;
+            transition: margin-left 0.3s ease-in-out !important;
+            width: {'100%' if not st.session_state.sidebar_open else 'calc(100% - 300px)'} !important;
+        }}
+        /* Ẩn toggle mặc định của Streamlit */
+        [data-testid="collapsedControl"] {{
+            display: none !important;
+        }}
+        /* Media query cho mobile: Tương tự toggle */
         @media (max-width: 768px) {{
             section[data-testid="stSidebar"] {{
                 width: 100% !important;
-                min-width: unset !important;
                 position: fixed !important;
                 top: 0 !important;
                 left: 0 !important;
                 height: 100vh !important;
                 z-index: 999 !important;
-                transform: translateX(0) !important;  /* Không slide nữa */
-                box-shadow: 2px 0 5px rgba(0,0,0,0.1) !important;
+                transform: translateX(0) !important;
+            }}
+            section[data-testid="stSidebar"].sidebar-hidden {{
+                transform: translateX(-100%) !important;
             }}
             .main {{
                 margin-left: 0 !important;
-                padding-left: 0 !important;
-            }}
-            /* Ẩn toggle trên mobile */
-            [data-testid="collapsedControl"] {{
-                display: none !important;
+                width: 100% !important;
             }}
         }}
     </style>
+    <script>
+        // JS hack để apply class động (nếu cần, nhưng CSS f-string đã đủ)
+        document.addEventListener('DOMContentLoaded', function() {{
+            const sidebar = parent.document.querySelector('section[data-testid="stSidebar"]');
+            if (sidebar) {{
+                sidebar.classList.toggle('sidebar-hidden', !{'true' if st.session_state.sidebar_open else 'false'});
+            }}
+        }});
+    </script>
     """,
     unsafe_allow_html=True
 )
