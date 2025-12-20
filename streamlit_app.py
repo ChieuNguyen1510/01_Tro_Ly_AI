@@ -117,7 +117,7 @@ try:
                 --card-bg: {'rgba(255, 255, 255, 0.9)' if st.session_state.theme == 'light' else 'rgba(0, 0, 0, 0.8)'};
                 --assistant-bg: {'#f0f7ff' if st.session_state.theme == 'light' else '#1e293b'};
                 --user-bg: {'#e6ffe6' if st.session_state.theme == 'light' else '#1e4a2e'};
-                --input-bg: {'rgba(255, 255, 255, 0.1)' if st.session_state.theme == 'light' else 'rgba(0, 0, 0, 0.3)'}; /* SỬA: Giảm opacity để transparent hơn */
+                --input-bg: {'rgba(255, 255, 255, 0.1)' if st.session_state.theme == 'light' else 'rgba(0, 0, 0, 0.3)'};
             }}
          
             /* Background đơn giản đã hoạt động - thêm transparent cho header và footer, fix crop top */
@@ -151,30 +151,46 @@ try:
                 margin-top: 0 !important;
             }}
         
-            /* SỬA: Làm footer (chat input) transparent hoàn toàn hơn, loại bỏ nền trắng */
+            /* SỬA: Làm footer (chat input) transparent hoàn toàn, loại bỏ nền trắng - Target các selector sâu hơn */
+            [data-testid="stBottom"] > div {{
+                background: transparent !important;
+            }}
+            .stBottom > div {{
+                background: transparent !important;
+            }}
+            .stChatInputContainer > div {{
+                background: transparent !important;
+            }}
+            .stChatFloatingInputContainer {{
+                background: transparent !important;
+            }}
             [data-testid="stChatInput"] {{
                 background: transparent !important;
                 border: none !important;
                 color: var(--text-color);
-                /* Thêm: Đảm bảo toàn bộ container input transparent */
                 box-shadow: none !important;
             }}
             [data-testid="stChatInput"] > div > div {{
-                background: transparent !important; /* SỬA: Transparent hoàn toàn, không dùng var(--input-bg) nữa */
-                border: 1px solid rgba(255, 255, 255, 0.2) !important; /* Thêm border nhẹ để phân biệt */
+                background: transparent !important;
+                border: 1px solid rgba(255, 255, 255, 0.2) !important;
                 border-radius: 10px !important;
-                backdrop-filter: blur(5px) !important; /* Giữ blur để text dễ đọc trên background */
+                backdrop-filter: blur(5px) !important;
                 color: var(--text-color);
-                padding: 8px 12px !important; /* Thêm padding cho thoải mái */
+                padding: 8px 12px !important;
             }}
             [data-testid="stChatInput"] input {{
-                background: transparent !important; /* Đảm bảo input field bên trong cũng transparent */
+                background: transparent !important;
                 border: none !important;
                 color: var(--text-color);
                 outline: none !important;
             }}
             [data-testid="stChatInput"] input::placeholder {{
-                color: rgba(255, 255, 255, 0.7) !important; /* Placeholder dễ thấy hơn trên background */
+                color: rgba(255, 255, 255, 0.7) !important;
+            }}
+            /* Thêm: Force transparent cho tất cả child elements của chat input */
+            [data-testid="stChatInput"] * {{
+                background: transparent !important;
+                box-shadow: none !important;
             }}
         
             /* Nội dung chính */
@@ -223,7 +239,7 @@ if "messages" not in st.session_state:
 if st.button(t['new_chat']):
     st.session_state.messages = [INITIAL_SYSTEM_MESSAGE, INITIAL_ASSISTANT_MESSAGE]
     st.rerun()
-# CSS cải tiến (FIX: Cho phép toggle sidebar với <<<)
+# CSS cải tiến (FIX: Cho phép toggle sidebar với <<<) - Loại bỏ quy tắc chat input ở đây để tránh conflict
 st.markdown(
     f"""
     <style>
@@ -274,15 +290,6 @@ st.markdown(
         .typing::after {{
             content: "{t['typing']}" !important;
             animation: blink 1s infinite !important;
-        }}
-        /* SỬA: Loại bỏ background cho stChatInput ở phần CSS này để tránh override */
-        [data-testid="stChatInput"] {{
-            background: transparent !important;
-            border: none !important;
-            border-radius: 8px !important;
-            padding: 8px !important;
-            color: var(--text-color);
-            box-shadow: none !important;
         }}
         /* Tùy chỉnh nút "New chat" */
         div.stButton > button {{
