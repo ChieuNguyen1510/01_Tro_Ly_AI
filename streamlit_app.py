@@ -1,6 +1,7 @@
 import streamlit as st
 from openai import OpenAI
 from base64 import b64encode
+import PyPDF2  # Thêm import để đọc PDF
 # MỚI: Set page config để wide layout, giúp sidebar có chỗ hơn và luôn mở
 st.set_page_config(
     layout="wide",
@@ -25,10 +26,25 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
-# Hàm đọc nội dung từ file văn bản
+# Hàm đọc nội dung từ file văn bản (giữ nguyên cho các file khác nếu cần)
 def rfile(name_file):
     with open(name_file, "r", encoding="utf-8") as file:
         return file.read()
+# MỚI: Hàm đọc và trích xuất text từ PDF
+def read_pdf(pdf_path):
+    try:
+        with open(pdf_path, 'rb') as file:
+            reader = PyPDF2.PdfReader(file)
+            text = ""
+            for page in reader.pages:
+                text += page.extract_text() + "\n"  # Thêm newline giữa các trang
+            return text.strip()
+    except FileNotFoundError:
+        st.error(f"File {pdf_path} không tìm thấy. Vui lòng đặt file vào thư mục app.")
+        return ""
+    except Exception as e:
+        st.error(f"Lỗi khi đọc PDF: {str(e)}")
+        return ""
 # Hàm chuyển ảnh thành base64
 def img_to_base64(img_path):
     with open(img_path, "rb") as f:
@@ -177,9 +193,16 @@ st.markdown(
 # OpenAI API
 openai_api_key = st.secrets.get("OPENAI_API_KEY")
 client = OpenAI(api_key=openai_api_key)
-# Tin nhắn hệ thống
-INITIAL_SYSTEM_MESSAGE = {"role": "system", "content": rfile("01.system_trainning.txt")}
-INITIAL_ASSISTANT_MESSAGE = {"role": "assistant", "content": rfile("02.assistant.txt")}
+# MỚI: Đọc từ PDF thay vì các file text riêng lẻ
+# Giả định "data.pdf" chứa toàn bộ nội dung cần thiết (system, assistant, model)
+# Bạn có thể parse thêm nếu PDF có cấu trúc (ví dụ: tách theo trang hoặc keyword)
+pdf_content = read_pdf("data.pdf")
+# Tạm thời gán toàn bộ PDF content cho system message (bạn có thể điều chỉnh để tách phần)
+# Ví dụ: system = pdf_content[:len(pdf_content)//3]  # Nếu cần tách thủ công
+INITIAL_SYSTEM_MESSAGE = {"role": "system", "content": pdf_content}  # Hoặc phần system từ PDF
+INITIAL_ASSISTANT_MESSAGE = {"role": "assistant", "content": pdf_content}  # Hoặc phần assistant từ PDF
+# Model: Giả định model name ở cuối PDF hoặc hardcode nếu cần
+model_name = "gpt-4o-mini"  # Mặc định, hoặc parse từ PDF nếu có (ví dụ: model_name = pdf_content.split()[-1])
 # Khởi tạo session_state.messages nếu chưa có
 if "messages" not in st.session_state:
     st.session_state.messages = [INITIAL_SYSTEM_MESSAGE, INITIAL_ASSISTANT_MESSAGE]
@@ -330,10 +353,10 @@ if prompt := st.chat_input(t['chat_placeholder']):
         '<div class="typing">Assistant is typing..</div>',
         unsafe_allow_html=True
     )
-    # Gọi API
+    # Gọi API - Sử dụng model_name từ PDF hoặc mặc định
     response = ""
     stream = client.chat.completions.create(
-        model=rfile("module_chatgpt.txt").strip(),
+        model=model_name,
         messages=[{"role": m["role"], "content": m["content"]} for m in st.session_state.messages],
         stream=True,
     )
